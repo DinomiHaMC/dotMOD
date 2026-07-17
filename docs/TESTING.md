@@ -12,7 +12,7 @@ Current JUnit coverage:
 
 - missing config category and field restoration;
 - invalid config value validation and clamping;
-- flat legacy config to schema-v2 migration;
+- flat legacy config to the current categorized schema migration;
 - failed legacy migration retry without a false commit marker;
 - UUID player-color extraction during migration;
 - malformed UUID isolation and future-schema rejection;
@@ -28,6 +28,11 @@ Current JUnit coverage:
 - ISM draft backup recovery, future-schema/registry write blocking, and
   external-change protection;
 - compact/wide ISM layout, local catalog search, and `0..40` snapshot reads.
+- preset name normalization and case-insensitive conflicts;
+- immutable metadata, tag normalization, and monotonic timestamps;
+- preset CRUD, active state, stale revisions, duplicate snapshots, and trash;
+- orphan index recovery and future primary/backup write blocking;
+- bounded whitelist-based preset JSON import/export with ItemStack components.
 
 Run the complete verification and build:
 
@@ -114,8 +119,40 @@ coverage.
 
 ### Presets
 
-- Test preset CRUD, duplicate names, quoted names, import/export, inventory
-  panel layout, helper counts, recipes, and cycle protection.
+Preset CRUD is implemented in Stage 3; helper-specific checks remain below for
+Stage 4.
+
+## Stage 3 Manual Checklist
+
+### Commands And ISM Integration
+
+- Test every `pst` command under both `/dot` and `/dotmod`, including quoted
+  names, spaces, escaped quotes, invalid names, case-only conflicts, and dynamic
+  suggestions.
+- Create a preset, cancel ISM, and verify no file is created; repeat and Save,
+  then verify UUID metadata and all 41 slots.
+- View and edit presets through ISM; modify the file externally while editing
+  and verify stale Save is rejected.
+- Rename, duplicate, select, export, import, and confirmed delete; verify active
+  state, timestamps, independent snapshots, clipboard JSON, backup, and trash.
+- Import malformed, oversized, future-schema, duplicate UUID/name, unknown item,
+  and unavailable-registry JSON; verify no existing preset is overwritten.
+
+### Inventory Panel
+
+- Test collapse, search, wheel scrolling, active highlight, create/import,
+  selection, right-click view/edit/export/delete, Escape, and keyboard focus.
+- Test panel sides Automatic/Left/Right at GUI scales 1 through Auto and
+  `320x240`, windowed, fullscreen, recipe book open/closed, and multiple status
+  effects.
+- Hold a real item on the Minecraft cursor and click/drag/release every empty
+  part of the panel and context menu; verify no item is dropped or moved.
+- Resize with search/scroll state and name dialog text entered; verify state is
+  retained and no duplicate widgets/callbacks appear.
+
+### Preset Helper
+
+- Test inventory panel helper counts, recipes, and cycle protection.
 
 ### Inventory Search
 

@@ -14,4 +14,7 @@ public interface HandledScreenAccessor {
 
     @Accessor("backgroundWidth")
     int dotmod$getBackgroundWidth();
+
+    @Accessor("backgroundHeight")
+    int dotmod$getBackgroundHeight();
 }

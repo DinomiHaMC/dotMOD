@@ -7,6 +7,7 @@ import com.dinomiha.dotmod.config.MessagePrefixMode;
 import com.dinomiha.dotmod.config.PlayerColorService;
 import com.dinomiha.dotmod.feature.invsee.InvSeeMode;
 import com.dinomiha.dotmod.feature.invsee.InvSeeService;
+import com.dinomiha.dotmod.feature.preset.command.PresetCommands;
 import com.dinomiha.dotmod.gui.HudEditorScreen;
 import com.dinomiha.dotmod.message.MessageService;
 import com.dinomiha.dotmod.message.MessageType;
@@ -56,6 +57,7 @@ public final class DotClientCommands {
                         .then(literal("view").executes(context -> openIsm(context.getSource(), InvSeeMode.VIEW)))
                         .then(literal("edit").executes(context -> openIsm(context.getSource(), InvSeeMode.EDIT)))
                         .then(literal("creative").executes(context -> openIsm(context.getSource(), InvSeeMode.CREATIVE))))
+                .then(PresetCommands.build(root))
                 .then(literal("reload")
                         .executes(context -> reload(context.getSource())))
                 .then(literal("prefix")
@@ -96,6 +98,12 @@ public final class DotClientCommands {
                 Text.translatable("command.dotmod.help.ism"),
                 "/" + root + " ism",
                 Text.translatable("command.dotmod.help.ism.tooltip")
+        ));
+        actions.append(Text.literal("  "));
+        actions.append(MessageService.commandAction(
+                Text.translatable("command.dotmod.help.presets"),
+                "/" + root + " pst lst",
+                Text.translatable("command.dotmod.help.presets.tooltip")
         ));
         MessageService.send(source, actions, MessageType.INFO);
         return Command.SINGLE_SUCCESS;

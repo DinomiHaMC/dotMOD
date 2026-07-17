@@ -10,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ConfigValidatorTest {
     @Test
@@ -54,5 +55,20 @@ class ConfigValidatorTest {
         current.replaceWith(loaded);
 
         assertFalse(current.general.enabled);
+    }
+
+    @Test
+    void schemaMigrationPreservesExplicitPresetFeatureChoice() {
+        DotModConfig migrated = new DotModConfig();
+        migrated.schemaVersion = 2;
+        migrated.inventoryPresets.enabled = false;
+        migrated.validate();
+        assertFalse(migrated.inventoryPresets.enabled);
+
+        DotModConfig current = new DotModConfig();
+        current.schemaVersion = 3;
+        current.inventoryPresets.enabled = false;
+        current.validate();
+        assertFalse(current.inventoryPresets.enabled);
     }
 }

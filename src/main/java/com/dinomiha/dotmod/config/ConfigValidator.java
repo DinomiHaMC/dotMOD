@@ -22,7 +22,7 @@ public final class ConfigValidator {
         config.commands = config.commands == null ? new CommandsConfig() : config.commands;
         config.hud = config.hud == null ? new HudConfig() : config.hud;
         config.quickCraft = config.quickCraft == null ? new QuickCraftConfig() : config.quickCraft;
-        config.inventoryPresets = feature(config.inventoryPresets);
+        config.inventoryPresets = config.inventoryPresets == null ? new InventoryPresetsConfig() : config.inventoryPresets;
         config.inventorySearch = feature(config.inventorySearch);
         config.durability = feature(config.durability);
         config.screenshots = feature(config.screenshots);
@@ -33,6 +33,9 @@ public final class ConfigValidator {
         config.commandAliases = feature(config.commandAliases);
         config.keybinds = config.keybinds == null ? new KeybindsConfig() : config.keybinds;
         config.interfaceConfig = config.interfaceConfig == null ? new InterfaceConfig() : config.interfaceConfig;
+        config.inventoryPresets.panelSide = config.inventoryPresets.panelSide == null
+                ? PresetPanelSide.AUTO
+                : config.inventoryPresets.panelSide;
 
         config.commands.prefix = config.commands.prefix == null ? MessagePrefixMode.DOTMOD_COLON : config.commands.prefix;
         config.commands.customPrefix = text(config.commands.customPrefix, "dotMod:", 32);

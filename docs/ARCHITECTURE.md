@@ -52,7 +52,7 @@ uninitialized configuration.
 
 ## Configuration
 
-`DotModConfig` has schema version `2` and these top-level categories:
+`DotModConfig` has schema version `3` and these top-level categories:
 
 ```text
 general, commands, hud, quickCraft, inventoryPresets, inventorySearch,
@@ -138,6 +138,41 @@ interaction manager or packet path. Player inventory is read once into a frozen
 copy when the screen opens; all subsequent cursor, catalog, and slot operations
 are local Java state.
 
+## Inventory Presets
+
+`InventoryPreset` is immutable and contains UUID, normalized name, optional
+description/tags, monotonic timestamps, and a deeply copied
+`VirtualInventorySnapshot`. Name conflict keys use Unicode NFKC plus
+case-insensitive comparison; names never determine a path.
+
+`PresetRepository` stores one `<uuid>.json` per preset and keeps ordering/active
+UUID in `presets/index.json`. All operations use a process lock plus filesystem
+lock. Preset writes are atomic and revision-checked; failed index commits roll
+back create/delete filesystem changes. Orphan files are discovered and restored
+to effective order. Delete moves both primary and backup to collision-free
+local trash names.
+
+Future primary or backup schemas block mutation without quarantine. Structural
+corruption is moved to a unique `.broken` artifact and can recover from a valid
+backup. Registry-dependent decode failure leaves the original file untouched.
+Non-canonical or duplicate UUID filenames are never mutated.
+
+`PresetImportExportService` accepts only a bounded JSON object with a fixed root
+field whitelist. It reuses `VirtualInventorySerializer`, so metadata and every
+component-bearing stack are validated before repository import. Clipboard is a
+client adapter only; imported data cannot provide paths, class names, commands,
+URLs, or executable behavior.
+
+`PresetClientService` adapts repository records to existing ISM modes. Create
+uses creative mode with an empty snapshot, view is read-only, and edit uses the
+regular editor. Save callbacks capture connection and file revision, rejecting
+world changes or stale external edits.
+
+The inventory panel is attached with Fabric screen events. Mouse press/release
+inside its bounded rectangle is consumed before `HandledScreen`, preventing
+vanilla outside-click item drops. It hides around recipe-book/status-effect
+conflicts and performs IO only on attach, refresh, or explicit user actions.
+
 ## Messages And Commands
 
 `MessageService` is the only formatter for dotMOD chat and overlay messages. It
@@ -162,6 +197,7 @@ Stage 1 introduces only components that have real consumers:
 - `DotTooltip` applies a shared tooltip delay.
 - `DotConfirmationDialog` wraps the accessible vanilla confirmation screen.
 - `DotTextField` standardizes validated, narrated single-line input fields.
+- `DotContextMenu` provides bounded action menus used by preset rows.
 
 The HUD reset uses confirmation, and inventory/HUD buttons use `DotButton`.
 Lists, scrolling panels, tabs, text inputs, color pickers, icon buttons, and

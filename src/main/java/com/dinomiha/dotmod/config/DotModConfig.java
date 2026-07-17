@@ -3,14 +3,14 @@ package com.dinomiha.dotmod.config;
 import com.google.gson.annotations.SerializedName;
 
 public final class DotModConfig {
-    public static final int CURRENT_SCHEMA_VERSION = 2;
+    public static final int CURRENT_SCHEMA_VERSION = 3;
 
     public int schemaVersion = CURRENT_SCHEMA_VERSION;
     public GeneralConfig general = new GeneralConfig();
     public CommandsConfig commands = new CommandsConfig();
     public HudConfig hud = new HudConfig();
     public QuickCraftConfig quickCraft = new QuickCraftConfig();
-    public FeatureConfig inventoryPresets = new FeatureConfig();
+    public InventoryPresetsConfig inventoryPresets = new InventoryPresetsConfig();
     public FeatureConfig inventorySearch = new FeatureConfig();
     public FeatureConfig durability = new FeatureConfig();
     public FeatureConfig screenshots = new FeatureConfig();

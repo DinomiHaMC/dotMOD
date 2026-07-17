@@ -8,13 +8,13 @@ import net.minecraft.registry.BuiltinRegistries;
 import net.minecraft.registry.RegistryOps;
 import net.minecraft.registry.RegistryWrapper;
 
-final class MinecraftTestBootstrap {
+public final class MinecraftTestBootstrap {
     private static RegistryWrapper.WrapperLookup registries;
 
     private MinecraftTestBootstrap() {
     }
 
-    static synchronized RegistryWrapper.WrapperLookup registries() {
+    public static synchronized RegistryWrapper.WrapperLookup registries() {
         if (registries == null) {
             SharedConstants.createGameVersion();
             Bootstrap.initialize();
@@ -23,7 +23,7 @@ final class MinecraftTestBootstrap {
         return registries;
     }
 
-    static RegistryOps<JsonElement> jsonOps() {
+    public static RegistryOps<JsonElement> jsonOps() {
         return registries().getOps(JsonOps.INSTANCE);
     }
 }

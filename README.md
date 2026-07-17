@@ -138,6 +138,32 @@ backup where possible. Drafts containing a newer schema or registry data that
 is unavailable in the current world are opened read-only and are not
 overwritten.
 
+### Inventory Presets
+
+Inventory presets store a versioned 41-slot ISM snapshot together with:
+
+- UUID identity;
+- case-insensitively unique name;
+- creation and update timestamps;
+- optional description and tags;
+- hotbar, main inventory, armor, and offhand contents.
+
+Each preset is stored as `config/dotmod/presets/<uuid>.json`; user names never
+become filesystem paths. `index.json` stores only ordering and the active UUID.
+The repository recovers orphan files, validates revisions before edits, keeps
+backups, moves deleted files to local trash, and blocks writes when a primary or
+backup uses a newer schema.
+
+The survival inventory has a bounded preset panel with collapse, search,
+scrolling, active highlight, create/import controls, selection, and a right-click
+menu for view, edit, export, and confirmed deletion. Position can be Automatic,
+Left, or Right. The panel hides instead of overlapping the recipe book or status
+effects.
+
+Preset JSON export/import uses the system clipboard. Import accepts at most
+1 MiB, validates a fixed field set and the complete ItemStack payload before any
+repository write, and never executes code or accepts a destination path.
+
 ### Configuration
 
 The configuration screen is available through Mod Menu or `/dot config`.
@@ -185,6 +211,15 @@ do not send custom packets or require dotMOD on the server.
 | `/dot config` | Open configuration |
 | `/dot hud` | Open the HUD editor |
 | `/dot ism [view\|edit\|creative]` | Open a local ISM session |
+| `/dot pst lst` | List presets and active state |
+| `/dot pst slc <name>` | Select the active preset |
+| `/dot pst crt <name>` | Create a preset through creative ISM |
+| `/dot pst dlt <name>` | Delete after confirmation |
+| `/dot pst shw <name>` | Open read-only ISM view |
+| `/dot pst ren <old> <new>` | Rename a preset |
+| `/dot pst dup <source> <new>` | Duplicate a preset |
+| `/dot pst exp <name>` | Copy safe preset JSON |
+| `/dot pst imp` | Import preset JSON from clipboard |
 | `/dot reload` | Reload configuration and player colors |
 | `/dot prefix dotmod` | Use `dotMod:` |
 | `/dot prefix brackets` | Use `[dotMod]` |
@@ -233,6 +268,9 @@ Fabric server, Paper/Spigot server, or Realm.
 - The creative ISM catalog contains locally registered default item variants.
   A draft may therefore contain an item unavailable on the current server, but
   ISM never attempts to grant or insert it into the real inventory.
+- A preset whose registry data is unavailable in the current world remains
+  untouched on disk and reserves its UUID/name, but cannot be opened until the
+  required registry data is available again.
 - A server command named `/dot` or `/dotmod` may conflict with the client root.
   Fabric's public client-command API does not expose the unmerged server command
   tree, so dotMOD cannot reliably detect this server-side name collision.

@@ -4,12 +4,14 @@ import com.dinomiha.dotmod.command.DotClientCommands;
 import com.dinomiha.dotmod.config.ConfigService;
 import com.dinomiha.dotmod.config.PlayerColorService;
 import com.dinomiha.dotmod.gui.InventoryButtons;
+import com.dinomiha.dotmod.feature.preset.screen.PresetPanelController;
 import com.dinomiha.dotmod.keybind.DotModKeybinds;
 import com.dinomiha.dotmod.mixin.HandledScreenAccessor;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.fabricmc.fabric.api.client.screen.v1.Screens;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
+import net.minecraft.client.gui.screen.ingame.InventoryScreen;
 
 public final class DotModClient implements ClientModInitializer {
     public static final String MOD_ID = "dotmod";
@@ -31,6 +33,11 @@ public final class DotModClient implements ClientModInitializer {
                         accessor.dotmod$getY(),
                         accessor.dotmod$getBackgroundWidth()
                 );
+            }
+            if (screen instanceof InventoryScreen inventoryScreen
+                    && ConfigService.get().config().general.enabled
+                    && ConfigService.get().config().inventoryPresets.enabled) {
+                new PresetPanelController(client, inventoryScreen).attach();
             }
         });
     }

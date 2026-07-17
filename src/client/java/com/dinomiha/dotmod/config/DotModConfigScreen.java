@@ -60,6 +60,24 @@ public final class DotModConfigScreen {
         quickCraft.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.quick_craft.enabled"), config.quickCraft.enabled)
                 .setSaveConsumer(value -> config.quickCraft.enabled = value)
                 .build());
+
+        ConfigCategory presets = builder.getOrCreateCategory(Text.translatable("config.dotmod.category.inventory_presets"));
+        presets.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.inventory_presets.enabled"), config.inventoryPresets.enabled)
+                .setSaveConsumer(value -> config.inventoryPresets.enabled = value)
+                .build());
+        presets.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.inventory_presets.expanded"), config.inventoryPresets.panelExpanded)
+                .setSaveConsumer(value -> config.inventoryPresets.panelExpanded = value)
+                .build());
+        presets.addEntry(entries.startEnumSelector(
+                        Text.translatable("config.dotmod.inventory_presets.side"),
+                        PresetPanelSide.class,
+                        config.inventoryPresets.panelSide
+                )
+                .setEnumNameProvider(value -> Text.translatable(
+                        "config.dotmod.inventory_presets.side." + value.name().toLowerCase(Locale.ROOT)
+                ))
+                .setSaveConsumer(value -> config.inventoryPresets.panelSide = value)
+                .build());
         quickCraft.addEntry(entries.startStrField(Text.translatable("config.dotmod.quick_craft.slots_2x2"), SlotListParser.format(config.quickCraft.slots2x2))
                 .setTooltip(Text.translatable("config.dotmod.quick_craft.slots_2x2.tooltip"))
                 .setSaveConsumer(value -> config.quickCraft.slots2x2 = SlotListParser.parse(value, List.of(9, 10, 18, 19)))
