@@ -3,5 +3,7 @@
   "key.dotmod.green_name": "Color targeted player green",
   "key.dotmod.red_name": "Color targeted player red",
   "key.dotmod.reset_name": "Reset targeted player name color",
-  "key.dotmod.toggle_shift": "Toggle Shift"
+  "key.dotmod.uniform_name_tags": "Toggle uniform name tags",
+  "key.dotmod.toggle_shift": "Toggle Shift",
+  "message.dotmod.uniform_name_tags": "Uniform name tags: %s"
 }

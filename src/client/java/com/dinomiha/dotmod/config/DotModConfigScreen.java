@@ -80,6 +80,14 @@ public final class DotModConfigScreen {
         hud.addEntry(entries.startIntSlider(Text.literal("Grid size"), config.hudGridSize, 1, 16)
                 .setSaveConsumer(value -> config.hudGridSize = Math.max(1, value))
                 .build());
+        hud.addEntry(entries.startBooleanToggle(Text.literal("Magnetic snapping"), config.hudMagneticSnapping)
+                .setTooltip(Text.literal("Snap to zero offsets, edges and centers of other HUD elements."))
+                .setSaveConsumer(value -> config.hudMagneticSnapping = value)
+                .build());
+        hud.addEntry(entries.startIntSlider(Text.literal("Magnetic snap distance"), config.hudMagneticSnapDistance, 1, 16)
+                .setTooltip(Text.literal("Maximum alignment distance in pixels."))
+                .setSaveConsumer(value -> config.hudMagneticSnapDistance = Math.max(1, Math.min(16, value)))
+                .build());
         for (HudElement element : HudElement.values()) {
             DotModConfig.HudOffset offset = config.hudOffset(element);
             hud.addEntry(entries.startIntField(Text.literal(element.displayName() + " dx"), offset.dx)
@@ -117,6 +125,21 @@ public final class DotModConfigScreen {
                 .setSaveConsumer(value -> config.notifyNameColorChanges = value)
                 .build());
 
+        ConfigCategory uniformNameTags = builder.getOrCreateCategory(Text.literal("Uniform Name Tags"));
+        uniformNameTags.addEntry(entries.startBooleanToggle(Text.literal("Enable Uniform Name Tags"), config.uniformNameTagsEnabled)
+                .setSaveConsumer(value -> config.uniformNameTagsEnabled = value)
+                .build());
+        uniformNameTags.addEntry(entries.startFloatField(Text.literal("Name tag size"), config.uniformNameTagSize)
+                .setTooltip(Text.literal("Screen-space size multiplier from 0.1 to 5.0."))
+                .setMin(0.1F)
+                .setMax(5.0F)
+                .setSaveConsumer(value -> config.uniformNameTagSize = Math.max(0.1F, Math.min(5.0F, value)))
+                .build());
+        uniformNameTags.addEntry(entries.startStrField(Text.literal("Background color"), config.uniformNameTagBackgroundColor)
+                .setTooltip(Text.literal("Opaque RGB color in #RRGGBB format."))
+                .setSaveConsumer(value -> config.uniformNameTagBackgroundColor = ColorUtil.normalizeHex(value, "#000000"))
+                .build());
+
         ConfigCategory toggleShift = builder.getOrCreateCategory(Text.literal("Toggle Shift"));
         toggleShift.addEntry(entries.startBooleanToggle(Text.literal("Enable Toggle Shift"), config.toggleShiftEnabled)
                 .setSaveConsumer(value -> config.toggleShiftEnabled = value)
@@ -126,6 +149,7 @@ public final class DotModConfigScreen {
         keybinds.addEntry(entries.startTextDescription(Text.literal("Green name: G")).build());
         keybinds.addEntry(entries.startTextDescription(Text.literal("Red name: R")).build());
         keybinds.addEntry(entries.startTextDescription(Text.literal("Reset name color: V")).build());
+        keybinds.addEntry(entries.startTextDescription(Text.literal("Uniform name tags: N")).build());
         keybinds.addEntry(entries.startTextDescription(Text.literal("Toggle Shift: Right Shift")).build());
         keybinds.addEntry(entries.startTextDescription(Text.literal("All keybinds are editable in Minecraft Controls.")).build());
 

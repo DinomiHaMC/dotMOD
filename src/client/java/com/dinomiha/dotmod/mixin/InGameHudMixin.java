@@ -2,13 +2,16 @@ package com.dinomiha.dotmod.mixin;
 
 import com.dinomiha.dotmod.hud.HudElement;
 import com.dinomiha.dotmod.hud.HudTransform;
+import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.hud.InGameHud;
+import net.minecraft.client.gui.hud.bar.Bar;
 import net.minecraft.client.render.RenderTickCounter;
 import net.minecraft.entity.player.PlayerEntity;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(InGameHud.class)
@@ -81,5 +84,21 @@ public abstract class InGameHudMixin {
     @Inject(method = "renderFood", at = @At("RETURN"))
     private void dotmod$popHunger(DrawContext context, PlayerEntity player, int top, int right, CallbackInfo ci) {
         HudTransform.pop(context);
+    }
+
+    @Redirect(
+            method = "renderMainHud",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/gui/hud/bar/Bar;drawExperienceLevel(Lnet/minecraft/client/gui/DrawContext;Lnet/minecraft/client/font/TextRenderer;I)V"
+            )
+    )
+    private void dotmod$renderExperienceLevel(DrawContext context, TextRenderer textRenderer, int level) {
+        HudTransform.push(context, HudElement.EXP_LEVEL);
+        try {
+            Bar.drawExperienceLevel(context, textRenderer, level);
+        } finally {
+            HudTransform.pop(context);
+        }
     }
 }

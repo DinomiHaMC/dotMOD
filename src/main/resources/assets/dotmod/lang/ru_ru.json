@@ -3,5 +3,7 @@
   "key.dotmod.green_name": "Покрасить ник цели в зелёный",
   "key.dotmod.red_name": "Покрасить ник цели в красный",
   "key.dotmod.reset_name": "Сбросить цвет ника цели",
-  "key.dotmod.toggle_shift": "Toggle Shift"
+  "key.dotmod.uniform_name_tags": "Переключить одинаковые никнеймы",
+  "key.dotmod.toggle_shift": "Toggle Shift",
+  "message.dotmod.uniform_name_tags": "Одинаковые никнеймы: %s"
 }

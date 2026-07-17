@@ -10,12 +10,23 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.text.Text;
 
 public final class HudEditorScreen extends Screen {
+    private static final int GUIDE_COLOR = 0xDD55FFFF;
+    private static final int[][] SNAP_ANCHOR_PAIRS = {
+            {0, 0},
+            {1, 1},
+            {2, 2},
+            {0, 2},
+            {2, 0}
+    };
+
     private final Screen parent;
     private HudElement dragging;
     private int dragStartMouseX;
     private int dragStartMouseY;
     private int dragStartDx;
     private int dragStartDy;
+    private Guide verticalGuide;
+    private Guide horizontalGuide;
 
     public HudEditorScreen(Screen parent) {
         super(Text.literal("dotMOD HUD Editor"));
@@ -54,6 +65,8 @@ public final class HudEditorScreen extends Screen {
     public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
         renderBackground(context, mouseX, mouseY, deltaTicks);
         renderGrid(context);
+        renderGuide(context, verticalGuide);
+        renderGuide(context, horizontalGuide);
         for (HudElement element : HudElement.values()) {
             HudLayout.Rect rect = HudLayout.rect(element, width, height);
             boolean hovered = mouseX >= rect.x() && mouseX <= rect.x() + rect.width() && mouseY >= rect.y() && mouseY <= rect.y() + rect.height();
@@ -71,7 +84,11 @@ public final class HudEditorScreen extends Screen {
         double mouseX = click.x();
         double mouseY = click.y();
         if (click.button() == 0) {
-            for (HudElement element : HudElement.values()) {
+            verticalGuide = null;
+            horizontalGuide = null;
+            HudElement[] elements = HudElement.values();
+            for (int index = elements.length - 1; index >= 0; index--) {
+                HudElement element = elements[index];
                 HudLayout.Rect rect = HudLayout.rect(element, width, height);
                 if (mouseX >= rect.x() && mouseX <= rect.x() + rect.width() && mouseY >= rect.y() && mouseY <= rect.y() + rect.height()) {
                     DotModConfig.HudOffset offset = DotModConfig.get().hudOffset(element);
@@ -101,6 +118,23 @@ public final class HudEditorScreen extends Screen {
                 dx = Math.round(dx / (float) grid) * grid;
                 dy = Math.round(dy / (float) grid) * grid;
             }
+            verticalGuide = null;
+            horizontalGuide = null;
+            if (config.hudMagneticSnapping) {
+                HudLayout.Rect currentRect = HudLayout.rect(dragging, width, height);
+                int baseX = currentRect.x() - offset.dx;
+                int baseY = currentRect.y() - offset.dy;
+                HudLayout.Rect proposedRect = new HudLayout.Rect(baseX + dx, baseY + dy, currentRect.width(), currentRect.height());
+
+                AxisSnap xSnap = snapX(proposedRect, dx, config.hudMagneticSnapDistance);
+                dx = xSnap.offset();
+                verticalGuide = xSnap.guide();
+                proposedRect = new HudLayout.Rect(baseX + dx, proposedRect.y(), proposedRect.width(), proposedRect.height());
+
+                AxisSnap ySnap = snapY(proposedRect, dy, config.hudMagneticSnapDistance);
+                dy = ySnap.offset();
+                horizontalGuide = ySnap.guide();
+            }
             offset.dx = dx;
             offset.dy = dy;
             return true;
@@ -112,6 +146,8 @@ public final class HudEditorScreen extends Screen {
     public boolean mouseReleased(Click click) {
         if (dragging != null && click.button() == 0) {
             dragging = null;
+            verticalGuide = null;
+            horizontalGuide = null;
             DotModConfig.save();
             return true;
         }
@@ -130,5 +166,100 @@ public final class HudEditorScreen extends Screen {
         for (int y = 0; y < height; y += grid) {
             context.fill(0, y, width, y + 1, 0x22000000);
         }
+    }
+
+    private AxisSnap snapX(HudLayout.Rect dragged, int proposedDx, int threshold) {
+        int bestDx = proposedDx;
+        int bestDistance = threshold + 1;
+        Guide bestGuide = null;
+
+        int zeroDistance = Math.abs(proposedDx);
+        if (zeroDistance <= threshold) {
+            bestDx = 0;
+            bestDistance = zeroDistance;
+            bestGuide = new Guide(true, dragged.x() - proposedDx, 0, height);
+        }
+
+        int[] draggedAnchors = xAnchors(dragged);
+        for (HudElement element : HudElement.values()) {
+            if (element == dragging) {
+                continue;
+            }
+            HudLayout.Rect target = HudLayout.rect(element, width, height);
+            int[] targetAnchors = xAnchors(target);
+            for (int[] pair : SNAP_ANCHOR_PAIRS) {
+                int delta = targetAnchors[pair[1]] - draggedAnchors[pair[0]];
+                int distance = Math.abs(delta);
+                if (distance <= threshold && distance < bestDistance) {
+                    bestDx = proposedDx + delta;
+                    bestDistance = distance;
+                    int top = Math.min(dragged.y(), target.y());
+                    int bottom = Math.max(dragged.y() + dragged.height(), target.y() + target.height());
+                    bestGuide = new Guide(true, targetAnchors[pair[1]], top, bottom);
+                }
+            }
+        }
+        return new AxisSnap(bestDx, bestGuide);
+    }
+
+    private AxisSnap snapY(HudLayout.Rect dragged, int proposedDy, int threshold) {
+        int bestDy = proposedDy;
+        int bestDistance = threshold + 1;
+        Guide bestGuide = null;
+
+        int zeroDistance = Math.abs(proposedDy);
+        if (zeroDistance <= threshold) {
+            bestDy = 0;
+            bestDistance = zeroDistance;
+            bestGuide = new Guide(false, dragged.y() - proposedDy, 0, width);
+        }
+
+        int[] draggedAnchors = yAnchors(dragged);
+        for (HudElement element : HudElement.values()) {
+            if (element == dragging) {
+                continue;
+            }
+            HudLayout.Rect target = HudLayout.rect(element, width, height);
+            int[] targetAnchors = yAnchors(target);
+            for (int[] pair : SNAP_ANCHOR_PAIRS) {
+                int delta = targetAnchors[pair[1]] - draggedAnchors[pair[0]];
+                int distance = Math.abs(delta);
+                if (distance <= threshold && distance < bestDistance) {
+                    bestDy = proposedDy + delta;
+                    bestDistance = distance;
+                    int left = Math.min(dragged.x(), target.x());
+                    int right = Math.max(dragged.x() + dragged.width(), target.x() + target.width());
+                    bestGuide = new Guide(false, targetAnchors[pair[1]], left, right);
+                }
+            }
+        }
+        return new AxisSnap(bestDy, bestGuide);
+    }
+
+    private static int[] xAnchors(HudLayout.Rect rect) {
+        return new int[]{rect.x(), rect.x() + rect.width() / 2, rect.x() + rect.width()};
+    }
+
+    private static int[] yAnchors(HudLayout.Rect rect) {
+        return new int[]{rect.y(), rect.y() + rect.height() / 2, rect.y() + rect.height()};
+    }
+
+    private static void renderGuide(DrawContext context, Guide guide) {
+        if (guide == null) {
+            return;
+        }
+        int start = Math.min(guide.start(), guide.end());
+        int end = Math.max(guide.start(), guide.end());
+        if (guide.vertical()) {
+            context.fill(guide.position(), start, guide.position() + 1, end + 1, GUIDE_COLOR);
+        } else {
+            context.fill(start, guide.position(), end + 1, guide.position() + 1, GUIDE_COLOR);
+        }
+    }
+
+    private record AxisSnap(int offset, Guide guide) {
+    }
+
+    private record Guide(boolean vertical, int position, int start, int end) {
     }
 }

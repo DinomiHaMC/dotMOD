@@ -21,6 +21,9 @@ public final class QuickCraft {
         if (client.player == null || client.interactionManager == null || !config.modEnabled || !config.quickCraftEnabled) {
             return;
         }
+        if (client.player.currentScreenHandler != handler || !handler.getCursorStack().isEmpty()) {
+            return;
+        }
         boolean playerInventory = handler instanceof PlayerScreenHandler;
         boolean craftingTable = handler instanceof CraftingScreenHandler;
         if (!playerInventory && !craftingTable) {
@@ -31,7 +34,11 @@ public final class QuickCraft {
         int[] targetIds = playerInventory ? new int[]{1, 2, 3, 4} : new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9};
         int count = Math.min(sources.size(), targetIds.length);
         for (int i = 0; i < count; i++) {
-            int sourceSlotId = findPlayerInventorySlot(handler, client.player.getInventory(), sources.get(i));
+            Integer logicalIndex = sources.get(i);
+            if (logicalIndex == null) {
+                continue;
+            }
+            int sourceSlotId = findPlayerInventorySlot(handler, client.player.getInventory(), logicalIndex);
             int targetSlotId = targetIds[i];
             if (sourceSlotId < 0 || targetSlotId >= handler.slots.size()) {
                 continue;
