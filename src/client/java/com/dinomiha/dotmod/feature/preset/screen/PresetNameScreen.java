@@ -73,10 +73,9 @@ public final class PresetNameScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        renderBackground(context, mouseX, mouseY, deltaTicks);
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, height / 2 - 48, 0xFFFFFF);
+        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, height / 2 - 48, 0xFFFFFFFF);
         if (!error.getString().isEmpty()) {
-            context.drawCenteredTextWithShadow(textRenderer, error, width / 2, height / 2 + 34, 0xFF5555);
+            context.drawCenteredTextWithShadow(textRenderer, error, width / 2, height / 2 + 34, 0xFFFF5555);
         }
         super.render(context, mouseX, mouseY, deltaTicks);
     }

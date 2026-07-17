@@ -55,7 +55,7 @@ uninitialized configuration.
 
 ## Configuration
 
-`DotModConfig` has schema version `5` and these top-level categories:
+`DotModConfig` has schema version `6` and these top-level categories:
 
 ```text
 general, commands, hud, quickCraft, inventoryPresets, inventorySearch,
@@ -308,6 +308,11 @@ with localized feedback.
 `DotConfirmationDialog`. `RecolorCommands` resolves exact case-insensitive names
 only from tab-list profiles and mutates colors by UUID. `DotColorPicker` edits a
 screen-local draft until Apply.
+
+Preset creation seeds its local creative ISM session from a copied 41-slot
+player snapshot. Selection uses `PresetInventoryArranger` for conservative
+whole-stack swaps through vanilla `PICKUP` interactions only; it never writes a
+real `Slot` or `PlayerInventory` directly and may report a partial result.
 
 ## UI Components
 

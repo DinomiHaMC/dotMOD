@@ -62,6 +62,7 @@ public final class DotClientCommands {
                         .then(literal("edit").executes(context -> openIsm(context.getSource(), InvSeeMode.EDIT)))
                         .then(literal("creative").executes(context -> openIsm(context.getSource(), InvSeeMode.CREATIVE))))
                 .then(PresetCommands.build(root))
+                .then(PresetCommands.buildLong(root))
                 .then(AliasCommands.build())
                 .then(literal("commands")
                         .executes(context -> openCommands(context.getSource())))

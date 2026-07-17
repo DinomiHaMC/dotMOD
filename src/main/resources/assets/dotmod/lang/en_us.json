@@ -324,6 +324,7 @@
   "command.dotmod.preset.action.select": "(select)",
   "command.dotmod.preset.action.select.tooltip": "Make this preset active",
   "command.dotmod.preset.selected": "Selected preset %s",
+  "command.dotmod.preset.selected.arranged": "Selected preset %s; moved %s stacks, %s slots remain different",
   "command.dotmod.preset.renamed": "Renamed preset to %s",
   "command.dotmod.preset.duplicated": "Duplicated preset as %s",
   "command.dotmod.preset.exported": "Copied preset %s as JSON",

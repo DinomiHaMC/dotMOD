@@ -3,7 +3,7 @@ package com.dinomiha.dotmod.config;
 import com.google.gson.annotations.SerializedName;
 
 public final class DotModConfig {
-    public static final int CURRENT_SCHEMA_VERSION = 5;
+    public static final int CURRENT_SCHEMA_VERSION = 6;
 
     public int schemaVersion = CURRENT_SCHEMA_VERSION;
     public GeneralConfig general = new GeneralConfig();

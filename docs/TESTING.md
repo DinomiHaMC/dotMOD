@@ -134,7 +134,13 @@ Run the complete verification and build:
   names, spaces, escaped quotes, invalid names, case-only conflicts, and dynamic
   suggestions.
 - Create a preset, cancel ISM, and verify no file is created; repeat and Save,
-  then verify UUID metadata and all 41 slots.
+  then verify UUID metadata and that all 41 slots initially mirror the current
+  player inventory.
+- Select a preset with exact stacks available in different slots; verify normal
+  synchronized clicks rearrange what is possible, blocked/missing stacks remain
+  untouched, and the real cursor ends empty.
+- Repeat every preset command through the long `/dot preset list|select|create|
+  delete|show|helper|rename|duplicate|export|import` tree.
 - View and edit presets through ISM; modify the file externally while editing
   and verify stale Save is rejected.
 - Rename, duplicate, select, export, import, and confirmed delete; verify active

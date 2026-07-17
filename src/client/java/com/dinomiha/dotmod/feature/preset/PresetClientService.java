@@ -6,6 +6,7 @@ import com.dinomiha.dotmod.feature.invsee.InvSeeMode;
 import com.dinomiha.dotmod.feature.invsee.InvSeeSession;
 import com.dinomiha.dotmod.feature.invsee.VirtualInventorySnapshot;
 import com.dinomiha.dotmod.feature.invsee.screen.InvSeeMenu;
+import com.dinomiha.dotmod.feature.invsee.source.PlayerInventorySnapshotSource;
 import com.dinomiha.dotmod.message.MessageService;
 import com.dinomiha.dotmod.message.MessageType;
 import com.google.gson.Gson;
@@ -53,6 +54,11 @@ public final class PresetClientService {
         context(client).repository().select(record.preset().id());
     }
 
+    public static PresetInventoryArranger.Result selectAndArrange(MinecraftClient client, PresetRecord record) {
+        select(client, record);
+        return PresetInventoryArranger.arrange(client, record.preset().inventory());
+    }
+
     public static PresetRecord rename(MinecraftClient client, PresetRecord record, String name) {
         return context(client).repository().rename(record.preset().id(), record.revision(), name);
     }
@@ -85,7 +91,7 @@ public final class PresetClientService {
         client.setScreen(new InvSeeMenu(
                 parent,
                 Text.translatable("screen.dotmod.preset.create", name),
-                new InvSeeSession(InvSeeMode.CREATIVE, VirtualInventorySnapshot.empty()),
+                new InvSeeSession(InvSeeMode.CREATIVE, PlayerInventorySnapshotSource.capture(client.player)),
                 snapshot -> saveCreated(client, connection, name, snapshot),
                 context.registries()
         ));

@@ -2,6 +2,7 @@ package com.dinomiha.dotmod.feature.commandalias;
 
 import com.dinomiha.dotmod.message.MessageService;
 import com.dinomiha.dotmod.message.MessageType;
+import com.dinomiha.dotmod.config.ConfigService;
 import com.mojang.brigadier.Command;
 import com.mojang.brigadier.arguments.StringArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -69,6 +70,7 @@ public final class AliasCommands {
                     .map(CommandAlias::enabled)
                     .orElse(true);
             CommandClientService.get().aliases().upsert(new CommandAlias(normalized, template, enabled));
+            enableAliasFeature();
             MessageService.send(source, Text.translatable("command.dotmod.alias.saved", normalized), MessageType.SUCCESS);
         });
     }
@@ -92,6 +94,9 @@ public final class AliasCommands {
                 throw new AliasException(AliasError.COMMAND_CONFLICT, "Alias conflicts with an active command");
             }
             CommandClientService.get().aliases().upsert(new CommandAlias(existing.name(), existing.template(), enabled));
+            if (enabled) {
+                enableAliasFeature();
+            }
             MessageService.send(source, Text.translatable(
                     enabled ? "command.dotmod.alias.enabled" : "command.dotmod.alias.disabled", existing.name()
             ), MessageType.SUCCESS);
@@ -121,6 +126,13 @@ public final class AliasCommands {
                     "message.dotmod.alias.error." + exception.error().name().toLowerCase(Locale.ROOT)
             ), MessageType.ERROR);
             return 0;
+        }
+    }
+
+    private static void enableAliasFeature() {
+        if (!ConfigService.get().config().commandAliases.enabled) {
+            ConfigService.get().config().commandAliases.enabled = true;
+            ConfigService.get().save();
         }
     }
 

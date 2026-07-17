@@ -28,9 +28,14 @@ public final class ConfigValidator {
         config.inventoryPresets = config.inventoryPresets == null ? new InventoryPresetsConfig() : config.inventoryPresets;
         config.inventorySearch = config.inventorySearch == null ? new InventorySearchConfig() : config.inventorySearch;
         if (config.inventorySearch.enabled == null) {
-            config.inventorySearch.enabled = loadedSchema >= 5;
+            config.inventorySearch.enabled = true;
         }
         config.durability = config.durability == null ? new DurabilityConfig() : config.durability;
+        if (loadedSchema < 6) {
+            config.inventorySearch.enabled = true;
+            config.durability.enabled = true;
+            config.commandAliases.enabled = true;
+        }
         config.screenshots = feature(config.screenshots);
         config.deathHistory = feature(config.deathHistory);
         config.toggleWalk = config.toggleWalk == null ? new ToggleWalkConfig() : config.toggleWalk;

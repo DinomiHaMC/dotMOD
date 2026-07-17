@@ -32,38 +32,46 @@ public final class PresetCommands {
     }
 
     public static LiteralArgumentBuilder<FabricClientCommandSource> build(String commandRoot) {
-        return literal("pst")
+        return build(commandRoot, false);
+    }
+
+    public static LiteralArgumentBuilder<FabricClientCommandSource> buildLong(String commandRoot) {
+        return build(commandRoot, true);
+    }
+
+    private static LiteralArgumentBuilder<FabricClientCommandSource> build(String commandRoot, boolean longNames) {
+        return literal(longNames ? "preset" : "pst")
                 .executes(context -> list(context.getSource(), commandRoot))
-                .then(literal("lst").executes(context -> list(context.getSource(), commandRoot)))
-                .then(literal("slc").then(existingName("name")
+                .then(literal(longNames ? "list" : "lst").executes(context -> list(context.getSource(), commandRoot)))
+                .then(literal(longNames ? "select" : "slc").then(existingName("name")
                         .executes(context -> select(context.getSource(), name(context, "name")))))
-                .then(literal("crt").then(argument("name", StringArgumentType.string())
+                .then(literal(longNames ? "create" : "crt").then(argument("name", StringArgumentType.string())
                         .executes(context -> create(context.getSource(), name(context, "name")))))
-                .then(literal("dlt").then(existingName("name")
+                .then(literal(longNames ? "delete" : "dlt").then(existingName("name")
                         .executes(context -> requestDelete(context.getSource(), name(context, "name")))))
-                .then(literal("shw").then(existingName("name")
+                .then(literal(longNames ? "show" : "shw").then(existingName("name")
                         .executes(context -> show(context.getSource(), name(context, "name")))))
-                .then(literal("hlp")
+                .then(literal(longNames ? "helper" : "hlp")
                         .executes(context -> helper(context.getSource(), null))
                         .then(existingName("name")
                                 .executes(context -> helper(context.getSource(), name(context, "name")))))
-                .then(literal("ren").then(existingName("name")
+                .then(literal(longNames ? "rename" : "ren").then(existingName("name")
                         .then(argument("new_name", StringArgumentType.string())
                                 .executes(context -> rename(
                                         context.getSource(),
                                         name(context, "name"),
                                         name(context, "new_name")
                                 )))))
-                .then(literal("dup").then(existingName("name")
+                .then(literal(longNames ? "duplicate" : "dup").then(existingName("name")
                         .then(argument("new_name", StringArgumentType.string())
                                 .executes(context -> duplicate(
                                         context.getSource(),
                                         name(context, "name"),
                                         name(context, "new_name")
                                 )))))
-                .then(literal("exp").then(existingName("name")
+                .then(literal(longNames ? "export" : "exp").then(existingName("name")
                         .executes(context -> exportPreset(context.getSource(), name(context, "name")))))
-                .then(literal("imp").executes(context -> importPreset(context.getSource())));
+                .then(literal(longNames ? "import" : "imp").executes(context -> importPreset(context.getSource())));
     }
 
     private static int list(FabricClientCommandSource source, String root) {
@@ -96,8 +104,11 @@ public final class PresetCommands {
     private static int select(FabricClientCommandSource source, String name) {
         return run(source, () -> {
             PresetRecord record = PresetClientService.require(source.getClient(), name);
-            PresetClientService.select(source.getClient(), record);
-            MessageService.send(source, Text.translatable("command.dotmod.preset.selected", record.preset().name()), MessageType.SUCCESS);
+            var result = PresetClientService.selectAndArrange(source.getClient(), record);
+            MessageService.send(source, Text.translatable(
+                    result.attempted() ? "command.dotmod.preset.selected.arranged" : "command.dotmod.preset.selected",
+                    record.preset().name(), result.moved(), result.unresolved()
+            ), MessageType.SUCCESS);
         });
     }
 

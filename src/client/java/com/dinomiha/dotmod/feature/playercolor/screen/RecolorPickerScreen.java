@@ -80,10 +80,9 @@ public final class RecolorPickerScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        renderBackground(context, mouseX, mouseY, deltaTicks);
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, height / 2 - 92, 0xFFFFFF);
+        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, height / 2 - 92, 0xFFFFFFFF);
         if (!error.getString().isEmpty()) {
-            context.drawCenteredTextWithShadow(textRenderer, error, width / 2, height / 2 + 54, 0xFF5555);
+            context.drawCenteredTextWithShadow(textRenderer, error, width / 2, height / 2 + 54, 0xFFFF5555);
         }
         super.render(context, mouseX, mouseY, deltaTicks);
     }

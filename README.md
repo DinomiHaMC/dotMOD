@@ -162,6 +162,11 @@ Inventory presets store a versioned 41-slot ISM snapshot together with:
 - optional description and tags;
 - hotbar, main inventory, armor, and offhand contents.
 
+New presets start from a local copy of the current player inventory. Selecting
+a preset marks it active and makes a best-effort rearrangement of available
+exact whole stacks through normal synchronized inventory clicks; unavailable or
+blocked slots are left unchanged and reported as unresolved.
+
 Each preset is stored as `config/dotmod/presets/<uuid>.json`; user names never
 become filesystem paths. `index.json` stores only ordering and the active UUID.
 The repository recovers orphan files, validates revisions before edits, keeps
@@ -300,6 +305,16 @@ do not send custom packets or require dotMOD on the server.
 | `/dot pst dup <source> <new>` | Duplicate a preset |
 | `/dot pst exp <name>` | Copy safe preset JSON |
 | `/dot pst imp` | Import preset JSON from clipboard |
+| `/dot preset list` | Long-form preset list command |
+| `/dot preset select <name>` | Select and best-effort arrange a preset |
+| `/dot preset create <name>` | Create from the current inventory snapshot |
+| `/dot preset delete <name>` | Delete after confirmation |
+| `/dot preset show <name>` | Open read-only ISM view |
+| `/dot preset helper [name]` | Open the material helper |
+| `/dot preset rename <old> <new>` | Rename a preset |
+| `/dot preset duplicate <source> <new>` | Duplicate a preset |
+| `/dot preset export <name>` | Copy safe preset JSON |
+| `/dot preset import` | Import preset JSON from clipboard |
 | `/dot alias list` | List aliases and enabled state |
 | `/dot alias set <name> <template...>` | Create or update an alias |
 | `/dot alias remove\|enable\|disable <name>` | Mutate an existing alias |

@@ -641,7 +641,6 @@ public final class InvSeeMenu extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        renderBackground(context, mouseX, mouseY, deltaTicks);
         boolean inventoryVisible = catalog == null || layout.wide() || !showCatalogPanel;
         boolean catalogVisible = catalog != null && (layout.wide() || showCatalogPanel);
         if (inventoryVisible) {
@@ -650,20 +649,21 @@ public final class InvSeeMenu extends Screen {
         if (catalogVisible) {
             drawPanel(context, layout.catalogPanel());
         }
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 5, 0xFFFFFF);
+        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 5, 0xFFFFFFFF);
         context.drawTextWithShadow(
                 textRenderer,
                 Text.translatable("screen.dotmod.ism.mode", Text.translatable(session.mode().shortTranslationKey()), Text.translatable(session.mode().translationKey())),
                 8,
                 20,
-                0xAAAAAA
+                0xFFAAAAAA
         );
         if (!status.getString().isEmpty()) {
             List<OrderedText> statusLines = textRenderer.wrapLines(status, Math.max(80, layout.status().width() - 8));
             int firstLine = Math.max(0, statusLines.size() - 2);
             int y = layout.status().y() + 1;
             for (int line = firstLine; line < statusLines.size(); line++) {
-                context.drawCenteredTextWithShadow(textRenderer, statusLines.get(line), width / 2, y, statusColor);
+                context.drawCenteredTextWithShadow(textRenderer, statusLines.get(line), width / 2, y,
+                        0xFF000000 | statusColor);
                 y += 10;
             }
         }

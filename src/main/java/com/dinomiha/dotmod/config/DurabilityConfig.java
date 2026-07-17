@@ -1,7 +1,7 @@
 package com.dinomiha.dotmod.config;
 
 public final class DurabilityConfig {
-    public boolean enabled;
+    public boolean enabled = true;
     public boolean warningsEnabled = true;
     public float warningThreshold = 0.15F;
     public int warningCooldownSeconds = 60;

@@ -324,6 +324,7 @@
   "command.dotmod.preset.action.select": "(выбрать)",
   "command.dotmod.preset.action.select.tooltip": "Сделать этот пресет активным",
   "command.dotmod.preset.selected": "Выбран пресет %s",
+  "command.dotmod.preset.selected.arranged": "Выбран пресет %s; перемещено стеков: %s, отличаются слотов: %s",
   "command.dotmod.preset.renamed": "Пресет переименован в %s",
   "command.dotmod.preset.duplicated": "Пресет скопирован как %s",
   "command.dotmod.preset.exported": "JSON пресета %s скопирован",

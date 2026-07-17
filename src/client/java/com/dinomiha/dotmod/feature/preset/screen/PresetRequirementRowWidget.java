@@ -66,7 +66,7 @@ public final class PresetRequirementRowWidget extends ClickableWidget {
                 textRenderer.trimToWidth(requirement.stack().getName().getString(), textWidth),
                 getX() + 23,
                 getY() + 7,
-                0xFFFFFF
+                0xFFFFFFFF
         );
         Text status = Text.literal(requirement.available() + "/" + requirement.required()
                 + (craftable ? " +" : ""));
@@ -75,7 +75,7 @@ public final class PresetRequirementRowWidget extends ClickableWidget {
                 status,
                 getX() + getWidth() - textRenderer.getWidth(status) - 4,
                 getY() + 7,
-                requirement.complete() ? 0x55FF55 : craftable ? 0x55FFFF : 0xFFAA55
+                requirement.complete() ? 0xFF55FF55 : craftable ? 0xFF55FFFF : 0xFFFFAA55
         );
     }
 

@@ -55,6 +55,11 @@ class AliasExpanderTest {
     }
 
     @Test
+    void matchesAliasRootsCaseInsensitively() {
+        assertEquals("say 1", expander(alias("s", "say 1")).expand("S"));
+    }
+
+    @Test
     void ignoresDisabledAliasesIncludingDuringRecursion() {
         AliasExpander expander = expander(
                 alias("a", "b $*"),

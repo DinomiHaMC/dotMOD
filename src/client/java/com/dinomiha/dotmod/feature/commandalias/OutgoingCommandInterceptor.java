@@ -50,7 +50,10 @@ public final class OutgoingCommandInterceptor {
 
     private static String modify(String command) {
         Plan plan = pending;
-        return plan != null && plan.original().equals(command) ? plan.expanded() : command;
+        if (plan == null || plan.original().equals(plan.expanded())) {
+            return command;
+        }
+        return plan.expanded();
     }
 
     private static void accepted(String command) {

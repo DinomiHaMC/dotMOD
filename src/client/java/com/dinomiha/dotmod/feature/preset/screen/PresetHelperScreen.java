@@ -205,15 +205,14 @@ public final class PresetHelperScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        renderBackground(context, mouseX, mouseY, deltaTicks);
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 7, 0xFFFFFF);
+        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 7, 0xFFFFFFFF);
         Text summary = Text.translatable(
                 "screen.dotmod.preset.helper.summary",
                 model.progress().available(), model.progress().required(),
                 model.progress().missing(), model.progress().percentage()
         );
         context.drawCenteredTextWithShadow(textRenderer, summary, width / 2, 18,
-                model.progress().complete() ? 0x55FF55 : 0xFFAA55);
+                model.progress().complete() ? 0xFF55FF55 : 0xFFFFAA55);
         boolean detailsVisible = width >= 520 || compactDetails;
         if (detailsVisible) {
             renderDetails(context);
@@ -245,7 +244,7 @@ public final class PresetHelperScreen extends Screen {
         detailFirstLine = Math.min(detailFirstLine, Math.max(0, detailCache.size() - visibleLines));
         int y = top + 5;
         for (int index = detailFirstLine; index < Math.min(detailCache.size(), detailFirstLine + visibleLines); index++) {
-            context.drawTextWithShadow(textRenderer, detailCache.get(index), x + 5, y, 0xDDDDDD);
+            context.drawTextWithShadow(textRenderer, detailCache.get(index), x + 5, y, 0xFFDDDDDD);
             y += 10;
         }
     }

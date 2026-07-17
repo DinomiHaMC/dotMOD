@@ -67,7 +67,7 @@ final class PresetRowWidget extends ClickableWidget {
         context.fill(getX(), getY(), getRight(), getBottom(), background);
         if (record != null) {
             String label = (record.active() ? "* " : "") + record.preset().name();
-            context.drawTextWithShadow(textRenderer, textRenderer.trimToWidth(label, Math.max(1, getWidth() - 6)), getX() + 3, getY() + 6, 0xFFFFFF);
+            context.drawTextWithShadow(textRenderer, textRenderer.trimToWidth(label, Math.max(1, getWidth() - 6)), getX() + 3, getY() + 6, 0xFFFFFFFF);
         }
     }
 

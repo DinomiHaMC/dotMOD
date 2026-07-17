@@ -61,7 +61,7 @@ public final class DotContextMenu extends ClickableWidget {
                     textRenderer.trimToWidth(action.label().getString(), Math.max(1, getWidth() - 8)),
                     getX() + 4,
                     rowY + 6,
-                    action.enabled() ? 0xFFFFFF : 0x777777
+                    action.enabled() ? 0xFFFFFFFF : 0xFF777777
             );
         }
         if (hovered >= 0 && hovered < actions.size() && actions.get(hovered).tooltip() != null) {

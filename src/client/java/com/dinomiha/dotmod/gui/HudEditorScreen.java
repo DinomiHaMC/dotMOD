@@ -82,7 +82,6 @@ public final class HudEditorScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        renderBackground(context, mouseX, mouseY, deltaTicks);
         renderGrid(context);
         for (var definition : HudWidgetDefaults.definitions()) {
             var widget = HudWidgetRegistry.get(definition.id());
@@ -108,15 +107,15 @@ public final class HudEditorScreen extends Screen {
                             Math.max(8, placement.width() - 6)),
                     placement.x() + 3,
                     placement.y() + 3,
-                    0xFFFFFF
+                    0xFFFFFFFF
             );
         }
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 10, 0xFFFFFF);
+        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 10, 0xFFFFFFFF);
         List<OrderedText> help = textRenderer.wrapLines(
                 Text.translatable("screen.dotmod.hud_editor.help"), Math.max(80, width - 192)
         );
         for (int index = 0; index < help.size(); index++) {
-            context.drawCenteredTextWithShadow(textRenderer, help.get(index), width / 2, 24 + index * 10, 0xA0A0A0);
+            context.drawCenteredTextWithShadow(textRenderer, help.get(index), width / 2, 24 + index * 10, 0xFFA0A0A0);
         }
         super.render(context, mouseX, mouseY, deltaTicks);
     }

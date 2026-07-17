@@ -175,8 +175,7 @@ public final class FastCommandListScreen extends Screen {
 
     @Override
     public void render(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        renderBackground(context, mouseX, mouseY, deltaTicks);
-        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, listY - 18, 0xFFFFFF);
+        context.drawCenteredTextWithShadow(textRenderer, title, width / 2, listY - 18, 0xFFFFFFFF);
         for (int index = 0; index < rows.size(); index++) {
             Row row = rows.get(index);
             int y = listY + 24 + index * ROW_HEIGHT;
@@ -184,11 +183,11 @@ public final class FastCommandListScreen extends Screen {
             context.fill(listX, y, listX + listWidth, y + ROW_HEIGHT - 1, hovered ? 0xAA353535 : 0xAA202020);
             context.drawTextWithShadow(textRenderer,
                     (row.pinned() ? "* " : "  ") + textRenderer.trimToWidth(row.entry().command(), listWidth - 12),
-                    listX + 5, y + 5, row.pinned() ? 0xFFFFAA : 0xDDDDDD);
+                    listX + 5, y + 5, row.pinned() ? 0xFFFFFFAA : 0xFFDDDDDD);
         }
         if (rows.isEmpty()) {
             context.drawCenteredTextWithShadow(textRenderer, Text.translatable("screen.dotmod.commands.empty"),
-                    width / 2, listY + 34, 0x888888);
+                    width / 2, listY + 34, 0xFF888888);
         }
         super.render(context, mouseX, mouseY, deltaTicks);
     }

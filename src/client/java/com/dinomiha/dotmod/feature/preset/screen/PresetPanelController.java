@@ -290,7 +290,7 @@ public final class PresetPanelController {
 
     private void select(PresetRecord record) {
         try {
-            PresetClientService.select(client, record);
+            PresetClientService.selectAndArrange(client, record);
             refresh();
         } catch (PresetException exception) {
             PresetClientService.report(exception);

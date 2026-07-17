@@ -58,6 +58,7 @@ public final class InventorySearchController {
     private Object language = Language.getInstance();
     private int lastMatches = -1;
     private int lastOccupied = -1;
+    private boolean eventsRegistered;
 
     private InventorySearchController(MinecraftClient client, HandledScreen<?> screen) {
         this.client = client;
@@ -139,13 +140,11 @@ public final class InventorySearchController {
     }
 
     private void registerEvents() {
+        if (eventsRegistered) {
+            return;
+        }
+        eventsRegistered = true;
         ScreenEvents.beforeRender(screen).register((ignored, context, mouseX, mouseY, tickDelta) -> updateLayout());
-        ScreenEvents.afterRender(screen).register((ignored, context, mouseX, mouseY, tickDelta) -> {
-            if (screen instanceof CreativeInventoryScreen && field != null && field.visible) {
-                field.render(context, mouseX, mouseY, tickDelta);
-                helpButton.render(context, mouseX, mouseY, tickDelta);
-            }
-        });
     }
 
     private void setQuery(String value) {
@@ -279,10 +278,10 @@ public final class InventorySearchController {
                     Text.translatable("screen.dotmod.inventory_search.error." + error.error().name().toLowerCase(Locale.ROOT)),
                     error.start() + 1
             );
-            field.setEditableColor(0xFF5555);
+            field.setEditableColor(0xFFFF5555);
         } else if (query.isBlank()) {
             tooltip = Text.translatable("screen.dotmod.inventory_search.empty");
-            field.setEditableColor(0xE0E0E0);
+            field.setEditableColor(0xFFE0E0E0);
         } else {
             Text explanation = explanation(parsed);
             tooltip = Text.translatable(
@@ -291,7 +290,7 @@ public final class InventorySearchController {
                     Math.max(0, lastMatches),
                     Math.max(0, lastOccupied)
             );
-            field.setEditableColor(0xE0E0E0);
+            field.setEditableColor(0xFFE0E0E0);
         }
         DotTooltip.attach(field, tooltip);
     }

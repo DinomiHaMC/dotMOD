@@ -91,7 +91,7 @@ class ConfigValidatorTest {
         assertEquals(-42, hearts.offsetY);
         assertTrue(migrated.durability.enabled);
         assertTrue(migrated.hud.widgets.containsKey("addon.legacy"));
-        assertEquals(5, migrated.schemaVersion);
+        assertEquals(6, migrated.schemaVersion);
     }
 
     @Test
@@ -121,7 +121,7 @@ class ConfigValidatorTest {
     }
 
     @Test
-    void schemaFiveMigrationPreservesExplicitSearchChoiceAndOldMissingDefault() {
+    void schemaSixMigrationEnablesPreviouslyHiddenSearchAndDurability() {
         Gson gson = new Gson();
         DotModConfig enabled = gson.fromJson("{\"schemaVersion\":4,\"inventorySearch\":{\"enabled\":true}}", DotModConfig.class);
         DotModConfig disabled = gson.fromJson("{\"schemaVersion\":4,\"inventorySearch\":{\"enabled\":false}}", DotModConfig.class);
@@ -134,8 +134,25 @@ class ConfigValidatorTest {
         explicitNull.validate();
 
         assertTrue(enabled.inventorySearch.enabled);
-        assertFalse(disabled.inventorySearch.enabled);
-        assertFalse(missing.inventorySearch.enabled);
-        assertFalse(explicitNull.inventorySearch.enabled);
+        assertTrue(disabled.inventorySearch.enabled);
+        assertTrue(missing.inventorySearch.enabled);
+        assertTrue(explicitNull.inventorySearch.enabled);
+        assertTrue(disabled.durability.enabled);
+        assertTrue(disabled.commandAliases.enabled);
+    }
+
+    @Test
+    void currentSchemaPreservesExplicitFeatureChoices() {
+        Gson gson = new Gson();
+        DotModConfig current = gson.fromJson(
+                "{\"schemaVersion\":6,\"inventorySearch\":{\"enabled\":false},\"durability\":{\"enabled\":false},\"commandAliases\":{\"enabled\":false}}",
+                DotModConfig.class
+        );
+
+        current.validate();
+
+        assertFalse(current.inventorySearch.enabled);
+        assertFalse(current.durability.enabled);
+        assertFalse(current.commandAliases.enabled);
     }
 }

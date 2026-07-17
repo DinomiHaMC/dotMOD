@@ -37,4 +37,8 @@ public record CommandAlias(String name, String template, boolean enabled) {
         }
         return normalized;
     }
+
+    static String normalizeLookupName(String value) {
+        return value == null ? "" : value.toLowerCase(Locale.ROOT);
+    }
 }

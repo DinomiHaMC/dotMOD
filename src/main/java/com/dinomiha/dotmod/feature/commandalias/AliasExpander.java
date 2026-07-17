@@ -39,7 +39,7 @@ public final class AliasExpander {
         if (tokens.isEmpty()) {
             throw new AliasException(AliasError.INVALID_INPUT, "Command is empty");
         }
-        CommandAlias alias = aliases.get(tokens.getFirst());
+        CommandAlias alias = aliases.get(CommandAlias.normalizeLookupName(tokens.getFirst()));
         if (alias == null || !alias.enabled()) {
             if (depth > 0) {
                 checkLength(input);
