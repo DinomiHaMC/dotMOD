@@ -5,6 +5,8 @@ import com.dinomiha.dotmod.config.ConfigService;
 import com.dinomiha.dotmod.config.DotModConfigScreen;
 import com.dinomiha.dotmod.config.MessagePrefixMode;
 import com.dinomiha.dotmod.config.PlayerColorService;
+import com.dinomiha.dotmod.feature.invsee.InvSeeMode;
+import com.dinomiha.dotmod.feature.invsee.InvSeeService;
 import com.dinomiha.dotmod.gui.HudEditorScreen;
 import com.dinomiha.dotmod.message.MessageService;
 import com.dinomiha.dotmod.message.MessageType;
@@ -49,6 +51,11 @@ public final class DotClientCommands {
                         .executes(context -> openConfig(context.getSource())))
                 .then(literal("hud")
                         .executes(context -> openHudEditor(context.getSource())))
+                .then(literal("ism")
+                        .executes(context -> openIsm(context.getSource(), InvSeeMode.VIEW))
+                        .then(literal("view").executes(context -> openIsm(context.getSource(), InvSeeMode.VIEW)))
+                        .then(literal("edit").executes(context -> openIsm(context.getSource(), InvSeeMode.EDIT)))
+                        .then(literal("creative").executes(context -> openIsm(context.getSource(), InvSeeMode.CREATIVE))))
                 .then(literal("reload")
                         .executes(context -> reload(context.getSource())))
                 .then(literal("prefix")
@@ -84,6 +91,12 @@ public final class DotClientCommands {
                 "/" + root + " hud",
                 Text.translatable("command.dotmod.help.hud.tooltip")
         ));
+        actions.append(Text.literal("  "));
+        actions.append(MessageService.commandAction(
+                Text.translatable("command.dotmod.help.ism"),
+                "/" + root + " ism",
+                Text.translatable("command.dotmod.help.ism.tooltip")
+        ));
         MessageService.send(source, actions, MessageType.INFO);
         return Command.SINGLE_SUCCESS;
     }
@@ -95,6 +108,11 @@ public final class DotClientCommands {
 
     private static int openHudEditor(FabricClientCommandSource source) {
         source.getClient().send(() -> source.getClient().setScreen(new HudEditorScreen(null)));
+        return Command.SINGLE_SUCCESS;
+    }
+
+    private static int openIsm(FabricClientCommandSource source, InvSeeMode mode) {
+        source.getClient().send(() -> InvSeeService.open(source.getClient(), mode));
         return Command.SINGLE_SUCCESS;
     }
 

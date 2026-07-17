@@ -10,7 +10,8 @@ not committed when the audit started.
 | --- | --- |
 | Stage 0 - Audit | Complete |
 | Stage 1 - Foundation | Complete |
-| Stages 2-10 | Not started |
+| Stage 2 - InvSeeMenu | Complete |
+| Stages 3-10 | Not started |
 
 The source-layout section below is the Stage 0 baseline. The current post-Stage
 1 architecture is documented in [`ARCHITECTURE.md`](ARCHITECTURE.md).

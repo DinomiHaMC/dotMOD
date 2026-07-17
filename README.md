@@ -115,6 +115,29 @@ toggle is pressed again.
 - Vanilla Hold and Toggle sneak accessibility modes are supported.
 - The active state is saved between restarts.
 
+### InvSeeMenu (ISM)
+
+ISM is a standalone local virtual-inventory screen. It never uses a
+`ScreenHandler`, changes the player's real slots, or sends inventory packets.
+
+| Mode | Command | Behavior |
+| --- | --- | --- |
+| `П` View | `/dot ism view` | Frozen read-only snapshot of the current inventory |
+| `Р` Editor | `/dot ism edit` | Edit a local copy of the current inventory |
+| `К` Creative editor | `/dot ism creative` | Edit the local draft using the client item catalog |
+
+The editor supports local cursor movement, swapping and merging stacks,
+right-click splitting, deletion, strict amount editing, rollback, tooltips,
+keyboard navigation, component-aware item information copying, explicit save,
+and discard confirmation. Creative catalog actions copy stacks into local state;
+they never grant items to the player.
+
+The serialized draft preserves item IDs, counts, and data components through
+Minecraft's registry-aware `ItemStack` codec. Corrupt drafts recover from a
+backup where possible. Drafts containing a newer schema or registry data that
+is unavailable in the current world are opened read-only and are not
+overwritten.
+
 ### Configuration
 
 The configuration screen is available through Mod Menu or `/dot config`.
@@ -134,6 +157,7 @@ Settings are stored in:
 ```text
 config/dotmod/config.json
 config/dotmod/player-colors.json
+config/dotmod/invsee-draft.json
 ```
 
 Each subsystem has its own path under `config/dotmod/`. Writes use a temporary
@@ -160,6 +184,7 @@ do not send custom packets or require dotMOD on the server.
 | `/dot` or `/dot help` | Show localized clickable help |
 | `/dot config` | Open configuration |
 | `/dot hud` | Open the HUD editor |
+| `/dot ism [view\|edit\|creative]` | Open a local ISM session |
 | `/dot reload` | Reload configuration and player colors |
 | `/dot prefix dotmod` | Use `dotMod:` |
 | `/dot prefix brackets` | Use `[dotMod]` |
@@ -202,6 +227,12 @@ Fabric server, Paper/Spigot server, or Realm.
 - HUD editor rectangles approximate dynamic vanilla elements such as multi-row
   hearts, multiple boss bars, and variable-size scoreboards.
 - Player colors depend on client-known entities and tab-list data.
+- ISM intentionally models the requested hotbar, main inventory, armor, and
+  offhand slots (`0..40`). Minecraft 1.21.11's special body/saddle slots are not
+  part of the current ISM schema.
+- The creative ISM catalog contains locally registered default item variants.
+  A draft may therefore contain an item unavailable on the current server, but
+  ISM never attempts to grant or insert it into the real inventory.
 - A server command named `/dot` or `/dotmod` may conflict with the client root.
   Fabric's public client-command API does not expose the unmerged server command
   tree, so dotMOD cannot reliably detect this server-side name collision.
@@ -235,7 +266,9 @@ Project documentation:
 
 JUnit currently covers config validation, future-schema protection, legacy
 migration and retry, malformed UUID isolation, safe JSON/backup recovery,
-atomic storage, localization parity, and data path separation.
+atomic storage, localization parity, ISM permissions and mutations, ItemStack
+component serialization, draft recovery/write protection, layout, catalog, and
+player snapshot boundaries.
 
 ## License
 

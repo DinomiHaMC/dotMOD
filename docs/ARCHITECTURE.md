@@ -15,12 +15,14 @@ features affect only rendering, local key state, local files, or client chat.
 ```text
 src/main/java/
   config/       Pure versioned models, validation, and legacy migration
+  feature/      Testable ISM model, session, layout, and serialization
   storage/      Paths, JSON documents, backup, and atomic persistence
   hud/          Client-independent HUD element identifiers
 
 src/client/java/
   command/      Fabric client command registration
   config/       Runtime ConfigService, player-color service, config screen
+  feature/      ISM screen, local catalog, launcher, and player snapshot source
   gui/          Inventory buttons, Quick Craft, and HUD editor
   hud/          Runtime HUD layout and transforms
   keybind/      Key registration and local toggle behavior
@@ -96,6 +98,46 @@ Player colors are keyed by UUID. Nicknames are not used as identity keys.
 Malformed serialized UUID keys are rejected individually so one bad entry does
 not discard other players' colors.
 
+## InvSeeMenu
+
+ISM follows this dependency chain:
+
+```text
+InvSeeMenu -> InvSeeInputController -> InvSeeSession
+           -> VirtualInventory -> VirtualInventorySnapshot
+           -> InvSeeSaveTarget
+```
+
+`VirtualInventory` owns exactly 41 copied stacks: hotbar `0..8`, main inventory
+`9..35`, armor `36..39`, and offhand `40`. It never holds `PlayerInventory`,
+`ScreenHandler`, vanilla `Slot`, or the real cursor stack. All getters and
+snapshots return deep copies.
+
+`InvSeeMode` grants explicit capabilities. View mode has tooltip/copy access but
+no mutation or save capability. Edit mode adds local mutation, amount changes,
+rollback, and save. Creative mode additionally allows copying default stacks
+from the local item registry into the ISM-owned cursor.
+
+`InvSeeSession` is the only mutation entrypoint. Save is an explicit callback;
+the screen cannot know whether Stage 3 supplies a draft or preset target. A
+non-empty local cursor blocks save, and failed targets keep the session open and
+dirty.
+
+`VirtualInventorySerializer` uses `ItemStack.VALIDATED_CODEC` with the active
+registry lookup. Empty slots are omitted; duplicate/out-of-range slots, unknown
+items, invalid components, overstacking, and future schemas are rejected.
+
+The Stage 2 adapter stores `invsee-draft.json` through `AtomicJsonStore`.
+Structural corruption can recover from `.bak`. Registry decode failures and
+future schemas block writes without quarantining or replacing the original.
+The repository fingerprints the file after load and refuses to overwrite an
+external change made during an open session.
+
+`InvSeeMenu` extends plain `Screen`, not `HandledScreen`. It has no inventory
+interaction manager or packet path. Player inventory is read once into a frozen
+copy when the screen opens; all subsequent cursor, catalog, and slot operations
+are local Java state.
+
 ## Messages And Commands
 
 `MessageService` is the only formatter for dotMOD chat and overlay messages. It
@@ -119,6 +161,7 @@ Stage 1 introduces only components that have real consumers:
 - `DotButton` standardizes compact buttons and tooltips.
 - `DotTooltip` applies a shared tooltip delay.
 - `DotConfirmationDialog` wraps the accessible vanilla confirmation screen.
+- `DotTextField` standardizes validated, narrated single-line input fields.
 
 The HUD reset uses confirmation, and inventory/HUD buttons use `DotButton`.
 Lists, scrolling panels, tabs, text inputs, color pickers, icon buttons, and

@@ -15,6 +15,10 @@ public record StoragePaths(Path configDirectory) {
         return root().resolve("player-colors.json");
     }
 
+    public Path invSeeDraftFile() {
+        return root().resolve("invsee-draft.json");
+    }
+
     public Path presetsDirectory() {
         return root().resolve("presets");
     }

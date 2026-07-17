@@ -20,7 +20,14 @@ Current JUnit coverage:
 - migration backup copying;
 - JSON creation and atomic replacement;
 - previous-file `.bak` preservation;
-- malformed JSON `.broken` preservation, backup recovery, and safe defaults.
+- malformed JSON `.broken` preservation, backup recovery, and safe defaults;
+- ISM 41-slot mapping and deep-copy invariants;
+- complete ISM mode capability boundaries;
+- local cursor move/split/merge, amount, rollback, and explicit save behavior;
+- component-bearing ItemStack JSON round-trip and invalid item rejection;
+- ISM draft backup recovery, future-schema/registry write blocking, and
+  external-change protection;
+- compact/wide ISM layout, local catalog search, and `0..40` snapshot reads.
 
 Run the complete verification and build:
 
@@ -67,19 +74,46 @@ Run the complete verification and build:
 - Verify Toggle Shift and uniform-name-tag state messages use the selected
   dotMOD prefix.
 
+## Stage 2 Manual Checklist
+
+### ISM Modes And Safety
+
+- Run `/dot ism view`; verify tooltips and copy work while left/right click,
+  Delete, amount changes, rollback, and save cannot mutate the snapshot.
+- Run `/dot ism edit`; verify first click selects, subsequent left/right clicks
+  move, split, merge, and swap only local stacks.
+- Verify Delete, amount `0`, valid maximum amount, invalid text, and overstack
+  input are handled without a crash.
+- Verify Ctrl+C, Ctrl+S, Ctrl+Z, arrows, Enter, Tab, mouse controls, and Escape.
+- Leave a local stack on the cursor; verify Save is blocked and Close asks for
+  discard confirmation.
+- Save an edit and verify the real player inventory and real Minecraft cursor
+  remain byte-for-byte unchanged.
+
+### Creative Catalog And Draft
+
+- Run `/dot ism creative`; search by localized name and namespaced item ID,
+  scroll the catalog, and select normal/max stacks with left/right click.
+- Verify catalog stacks are copied into local state and are never granted to the
+  player or sent to the server.
+- Save, reopen, and verify counts and component-bearing items round-trip.
+- Corrupt the primary draft and verify `.broken` plus valid `.bak` recovery.
+- Open a future-schema draft and a draft with world-unavailable registry data;
+  verify each remains untouched and Save fails safely.
+- Resize between `320x240`, standard, fullscreen, and multiple GUI scales;
+  verify compact panel switching, restored search text, wrapped status, and no
+  control outside the screen.
+- Disconnect or change worlds while ISM is open; verify no packet, crash, or
+  unintended save occurs.
+
 ## Future Stage Checklists
 
 The following checks become active only after their implementation stage. They
 are retained here so features are not considered complete without in-game
 coverage.
 
-### ISM And Presets
+### Presets
 
-- Verify view mode rejects every mutation path.
-- Verify edit cancel restores the original local model and save round-trips all
-  slots and item components.
-- Verify creative mode copies into local state without changing the player
-  inventory, cursor stack, or server inventory.
 - Test preset CRUD, duplicate names, quoted names, import/export, inventory
   panel layout, helper counts, recipes, and cycle protection.
 

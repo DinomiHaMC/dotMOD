@@ -37,10 +37,13 @@ public final class AtomicJsonStore<T> {
 
     public LoadResult<T> load() {
         if (!Files.exists(path)) {
-            Optional<T> backup = readBackup();
-            if (backup.isPresent()) {
-                boolean restored = write(backup.get(), false);
-                return new LoadResult<>(backup.get(), true, false, !restored);
+            BackupReadResult<T> backup = readBackup();
+            if (backup.incompatible()) {
+                return new LoadResult<>(createDefaults(), true, false, true);
+            }
+            if (backup.value().isPresent()) {
+                boolean restored = write(backup.value().get(), false);
+                return new LoadResult<>(backup.value().get(), true, false, !restored);
             }
             T value = createDefaults();
             boolean created = save(value);
@@ -57,10 +60,13 @@ public final class AtomicJsonStore<T> {
             if (!preserveBrokenFile()) {
                 return new LoadResult<>(createDefaults(), true, false, true);
             }
-            Optional<T> backup = readBackup();
-            if (backup.isPresent()) {
-                boolean restored = write(backup.get(), false);
-                return new LoadResult<>(backup.get(), true, false, !restored);
+            BackupReadResult<T> backup = readBackup();
+            if (backup.incompatible()) {
+                return new LoadResult<>(createDefaults(), true, false, true);
+            }
+            if (backup.value().isPresent()) {
+                boolean restored = write(backup.value().get(), false);
+                return new LoadResult<>(backup.value().get(), true, false, !restored);
             }
             T value = createDefaults();
             boolean restored = save(value);
@@ -123,16 +129,19 @@ public final class AtomicJsonStore<T> {
         }
     }
 
-    private Optional<T> readBackup() {
+    private BackupReadResult<T> readBackup() {
         Path backup = path.resolveSibling(path.getFileName() + ".bak");
         if (!Files.exists(backup)) {
-            return Optional.empty();
+            return new BackupReadResult<>(Optional.empty(), false);
         }
         try {
-            return Optional.of(read(backup));
+            return new BackupReadResult<>(Optional.of(read(backup)), false);
+        } catch (UnsupportedDataVersionException exception) {
+            LOGGER.log(Level.WARNING, "Refusing to overwrite newer backup " + backup, exception);
+            return new BackupReadResult<>(Optional.empty(), true);
         } catch (IOException | RuntimeException exception) {
             LOGGER.log(Level.WARNING, "Failed to recover backup " + backup, exception);
-            return Optional.empty();
+            return new BackupReadResult<>(Optional.empty(), false);
         }
     }
 
@@ -163,5 +172,8 @@ public final class AtomicJsonStore<T> {
     }
 
     public record LoadResult<T>(T value, boolean recovered, boolean created, boolean writeBlocked) {
+    }
+
+    private record BackupReadResult<T>(Optional<T> value, boolean incompatible) {
     }
 }
