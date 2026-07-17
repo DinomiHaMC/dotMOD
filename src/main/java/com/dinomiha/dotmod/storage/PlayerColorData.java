@@ -5,10 +5,11 @@ import java.util.Map;
 import java.util.UUID;
 
 public final class PlayerColorData {
-    public static final int CURRENT_SCHEMA_VERSION = 1;
+    public static final int CURRENT_SCHEMA_VERSION = 2;
 
     public int schemaVersion = CURRENT_SCHEMA_VERSION;
     public Map<String, String> colors = new HashMap<>();
+    public Map<String, String> lastKnownNames = new HashMap<>();
 
     public void validate() {
         if (schemaVersion > CURRENT_SCHEMA_VERSION) {
@@ -32,5 +33,27 @@ public final class PlayerColorData {
             });
         }
         colors = valid;
+
+        Map<String, String> validNames = new HashMap<>();
+        if (lastKnownNames != null) {
+            lastKnownNames.forEach((uuidText, name) -> {
+                if (uuidText == null || !isValidName(name)) {
+                    return;
+                }
+                try {
+                    validNames.put(UUID.fromString(uuidText).toString(), name);
+                } catch (IllegalArgumentException ignored) {
+                    // Name metadata is optional and never affects a valid color entry.
+                }
+            });
+        }
+        lastKnownNames = validNames;
+    }
+
+    public static boolean isValidName(String name) {
+        return name != null
+                && !name.isEmpty()
+                && name.length() <= 64
+                && name.codePoints().noneMatch(Character::isISOControl);
     }
 }

@@ -56,6 +56,10 @@ public final class DotModConfigScreen {
                 .setTooltip(Text.translatable("config.dotmod.commands.custom_prefix.tooltip"))
                 .setSaveConsumer(value -> config.commands.customPrefix = value)
                 .build());
+        commands.addEntry(entries.startBooleanToggle(
+                        Text.translatable("config.dotmod.command_aliases.enabled"), config.commandAliases.enabled)
+                .setSaveConsumer(value -> config.commandAliases.enabled = value)
+                .build());
 
         ConfigCategory quickCraft = builder.getOrCreateCategory(Text.translatable("config.dotmod.category.quick_craft"));
         quickCraft.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.quick_craft.enabled"), config.quickCraft.enabled)
@@ -256,6 +260,7 @@ public final class DotModConfigScreen {
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.uniform_name_tags")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.toggle_shift")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.preset_helper")).build());
+        keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.fast_commands")).build());
         keybinds.addEntry(entries.startTextDescription(Text.translatable("config.dotmod.keybinds.controls_hint")).build());
 
         return builder.build();

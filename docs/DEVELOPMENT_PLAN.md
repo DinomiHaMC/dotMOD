@@ -537,6 +537,8 @@ Suggested commit: `feat: add parsed inventory search`
 
 ### Stage 7 - Commands, History, Aliases, and Recolor
 
+Status: **Complete**
+
 Goals:
 
 - Add Fast Command List and recent-command history.
@@ -547,7 +549,7 @@ Goals:
 - Persist aliases, history, pinned entries, and last-known player names in
   separate stores.
 
-Planned files:
+Implemented files:
 
 ```text
 feature/commandlist/CommandEntry.java
@@ -559,11 +561,17 @@ feature/commandalias/AliasRepository.java
 feature/commandalias/AliasExpander.java
 feature/commandalias/AliasCycleDetector.java
 feature/commandalias/OutgoingCommandInterceptor.java
-feature/playercolor/PlayerColorService.java
-feature/playercolor/PlayerColorRepository.java
-feature/playercolor/command/RecolorCommands.java
+feature/commandalias/CommandClientService.java
+feature/commandalias/AliasCommands.java
+config/PlayerColorService.java
+feature/playercolor/PlayerLookup.java
+feature/playercolor/StrictHexColor.java
+feature/playercolor/RecolorCommands.java
+feature/playercolor/screen/RecolorPickerScreen.java
 ui/component/DotColorPicker.java
 src/test/java/com/dinomiha/dotmod/feature/commandalias/*
+src/test/java/com/dinomiha/dotmod/feature/commandlist/*
+src/test/java/com/dinomiha/dotmod/feature/playercolor/*
 ```
 
 Exit criteria:
@@ -572,6 +580,20 @@ Exit criteria:
 - A command is sent only after explicit user action and at most once.
 - Sensitive patterns prevent selected history entries from being persisted.
 - Colors remain keyed by UUID with last-known names as metadata only.
+
+Actual behavior:
+
+- One singleton owns pretty-printed alias and command-history stores; reload
+  includes both, and recent and pinned history are each capped at 100.
+- Fabric allow/modify/accepted/canceled events share one pending expansion plan.
+  Typed expansion failures are blocked with localized feedback; accepted final
+  commands are recorded once without cancel-and-resend.
+- Alias mutations and sends reject reserved and currently active dispatcher
+  roots. Alias templates use Brigadier `greedyString`.
+- Fast Command List selection only edits its field. Execute/Enter is the sole
+  send path, with confirmation for dangerous roots.
+- Recolor resolves tab-list profiles by UUID, accepts only six-digit RGB, and
+  keeps picker changes local until Apply.
 
 Suggested commit: `feat: add command tools and aliases`
 

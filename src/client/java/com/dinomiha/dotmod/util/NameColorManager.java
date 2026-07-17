@@ -31,7 +31,7 @@ public final class NameColorManager {
         }
         PlayerEntity player = target.get();
         String color = ColorUtil.normalizeHex(hexColor, "#FFFFFF");
-        boolean saved = PlayerColorService.get().set(player.getUuid(), color);
+        boolean saved = PlayerColorService.get().set(player.getUuid(), color, player.getGameProfile().name());
         notify(
                 saved
                         ? Text.translatable("message.dotmod.player_colors.set", player.getName(), color)

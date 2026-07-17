@@ -7,6 +7,8 @@ import com.dinomiha.dotmod.gui.InventoryButtons;
 import com.dinomiha.dotmod.feature.preset.screen.PresetPanelController;
 import com.dinomiha.dotmod.feature.durability.DurabilityWarningController;
 import com.dinomiha.dotmod.feature.inventorysearch.screen.InventorySearchController;
+import com.dinomiha.dotmod.feature.commandalias.CommandClientService;
+import com.dinomiha.dotmod.feature.commandalias.OutgoingCommandInterceptor;
 import com.dinomiha.dotmod.hud.widget.HudWidgetRegistry;
 import com.dinomiha.dotmod.keybind.DotModKeybinds;
 import com.dinomiha.dotmod.mixin.HandledScreenAccessor;
@@ -24,6 +26,8 @@ public final class DotModClient implements ClientModInitializer {
     public void onInitializeClient() {
         ConfigService.initialize();
         PlayerColorService.initialize();
+        CommandClientService.initialize();
+        OutgoingCommandInterceptor.register();
         HudWidgetRegistry.register();
         DurabilityWarningController.register();
         DotClientCommands.register();

@@ -227,11 +227,10 @@ Run the complete verification and build:
 - Verify no inventory/custom packet is sent by search and disconnect/container
   close behavior remains vanilla.
 
-## Future Stage Checklists
+## Manual Stage Checklists
 
-The following checks become active only after their implementation stage. They
-are retained here so features are not considered complete without in-game
-coverage.
+The following checks complement automated coverage and require an in-game
+client or platform environment.
 
 ### Command Features
 
@@ -241,6 +240,12 @@ coverage.
   real-command conflicts, direct and indirect cycles, and disabled aliases.
 - Test recolor against tab-list players, unknown players, reset/list, picker,
   UUID identity, and invalid HEX values.
+- Verify opening or selecting a Fast Command List row never sends, Execute/Enter
+  sends once without a slash, cancellation clears pending alias state, and
+  another modifier does not cause cancel-and-resend behavior.
+- Automated tests cover strict HEX canonicalization, unknown/ambiguous profile
+  resolution, alias cycles/limits/persistence, sensitive filtering, history
+  limits, pinning, and recovery/write blocking.
 
 ### Death And Screenshot+
 

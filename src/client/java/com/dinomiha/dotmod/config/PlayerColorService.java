@@ -14,6 +14,7 @@ public final class PlayerColorService {
     private final ConfigService configService;
     private final AtomicJsonStore<PlayerColorData> store;
     private final Map<UUID, String> colors = new HashMap<>();
+    private final Map<UUID, String> lastKnownNames = new HashMap<>();
     private boolean writeBlocked;
 
     private PlayerColorService(ConfigService configService) {
@@ -38,13 +39,34 @@ public final class PlayerColorService {
         return Optional.ofNullable(colors.get(uuid));
     }
 
+    public Optional<String> lastKnownName(UUID uuid) {
+        return Optional.ofNullable(lastKnownNames.get(uuid));
+    }
+
+    public Map<UUID, String> snapshot() {
+        return Map.copyOf(colors);
+    }
+
+    public Map<UUID, String> lastKnownNamesSnapshot() {
+        return Map.copyOf(lastKnownNames);
+    }
+
     public boolean set(UUID uuid, String color) {
         colors.put(uuid, color);
         return saveIfPersistent();
     }
 
+    public boolean set(UUID uuid, String color, String name) {
+        colors.put(uuid, color);
+        if (PlayerColorData.isValidName(name)) {
+            lastKnownNames.put(uuid, name);
+        }
+        return saveIfPersistent();
+    }
+
     public boolean clear(UUID uuid) {
         colors.remove(uuid);
+        lastKnownNames.remove(uuid);
         return saveIfPersistent();
     }
 
@@ -52,14 +74,17 @@ public final class PlayerColorService {
         AtomicJsonStore.LoadResult<PlayerColorData> result = store.load();
         writeBlocked = result.writeBlocked();
         colors.clear();
+        lastKnownNames.clear();
         if (configService.config().playerColors.persist) {
             result.value().colors.forEach((uuid, color) -> colors.put(UUID.fromString(uuid), color));
+            result.value().lastKnownNames.forEach((uuid, name) -> lastKnownNames.put(UUID.fromString(uuid), name));
             return !result.recovered() && !writeBlocked;
         }
         if (writeBlocked) {
             return false;
         }
-        boolean cleared = result.value().colors.isEmpty() || store.save(new PlayerColorData());
+        boolean cleared = (result.value().colors.isEmpty() && result.value().lastKnownNames.isEmpty())
+                || store.save(new PlayerColorData());
         return !result.recovered() && cleared;
     }
 
@@ -86,6 +111,7 @@ public final class PlayerColorService {
         }
         PlayerColorData data = new PlayerColorData();
         colors.forEach((uuid, color) -> data.colors.put(uuid.toString(), color));
+        lastKnownNames.forEach((uuid, name) -> data.lastKnownNames.put(uuid.toString(), name));
         return store.save(data);
     }
 }

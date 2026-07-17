@@ -8,6 +8,7 @@ import com.dinomiha.dotmod.feature.preset.PresetClientService;
 import com.dinomiha.dotmod.feature.preset.PresetException;
 import com.dinomiha.dotmod.feature.preset.PresetRecord;
 import com.dinomiha.dotmod.feature.preset.helper.PresetHelperClientService;
+import com.dinomiha.dotmod.feature.commandlist.screen.FastCommandListScreen;
 import com.dinomiha.dotmod.util.NameColorManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -29,6 +30,7 @@ public final class DotModKeybinds {
     private static KeyBinding uniformNameTags;
     private static KeyBinding toggleShift;
     private static KeyBinding presetHelper;
+    private static KeyBinding fastCommands;
     private static boolean forcingSneak;
 
     private DotModKeybinds() {
@@ -40,6 +42,7 @@ public final class DotModKeybinds {
         resetName = register("key.dotmod.reset_name", GLFW.GLFW_KEY_V);
         uniformNameTags = register("key.dotmod.uniform_name_tags", GLFW.GLFW_KEY_N);
         presetHelper = register("key.dotmod.preset_helper", InputUtil.UNKNOWN_KEY.getCode());
+        fastCommands = register("key.dotmod.fast_commands", InputUtil.UNKNOWN_KEY.getCode());
         toggleShift = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.dotmod.toggle_shift",
                 InputUtil.Type.KEYSYM,
@@ -119,6 +122,11 @@ public final class DotModKeybinds {
         while (presetHelper.wasPressed()) {
             if (config.inventoryPresets.enabled) {
                 openPresetHelper(client);
+            }
+        }
+        while (fastCommands.wasPressed()) {
+            if (client.currentScreen == null) {
+                client.setScreen(new FastCommandListScreen(null));
             }
         }
         updateSneakState(client);

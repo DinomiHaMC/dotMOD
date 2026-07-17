@@ -219,6 +219,26 @@ and bounded basic tooltip text. The `?` button exposes the syntax as a nonmodal
 tooltip. Search is hidden while a narrow recipe book owns the screen because
 vanilla does not render container slots in that state.
 
+### Commands, Aliases, and Recolor
+
+`/dot commands` opens a compact local list of pinned and recent commands. Both
+collections are bounded to 100 entries. A row
+only fills the editable command field; commands run only from **Execute** or
+Enter. Pinning, unpinning, clearing recent history, and confirmation for common
+administrative commands are explicit actions. The equivalent keybind is unbound
+by default. Sensitive authentication-style commands are excluded from history.
+
+Aliases are managed with `/dot alias`. Templates accept `$1` through `$9`, `$*`,
+and `$$`; ordinary extra arguments are appended when a template has no
+placeholder. Expansion is bounded and cycle-safe. Alias roots are rejected when
+they conflict with `dot`, `dotmod`, or an active client/server command. Fabric's
+outgoing command events modify one send in place, never cancel and resend it.
+
+`/dot recolor` lists local UUID colors and can set, reset, or open a compact
+picker for an exact tab-list profile. HEX input is strictly `#RRGGBB` or
+`RRGGBB`. Picker changes remain a draft until **Apply**; names are stored only as
+last-known display metadata and never replace UUID identity.
+
 ### Configuration
 
 The configuration screen is available through Mod Menu or `/dot config`.
@@ -241,6 +261,8 @@ Settings are stored in:
 config/dotmod/config.json
 config/dotmod/player-colors.json
 config/dotmod/invsee-draft.json
+config/dotmod/command-aliases.json
+config/dotmod/command-history.json
 ```
 
 Each subsystem has its own path under `config/dotmod/`. Writes use a temporary
@@ -251,8 +273,8 @@ startup.
 
 The previous flat `config/dotmod.json` format is migrated automatically. The
 original is retained as `config/dotmod.json.migrated.bak` before the new files
-are written. `/dot reload` reloads configuration and player colors without
-restarting Minecraft.
+are written. `/dot reload` reloads configuration, player colors, aliases, and
+command history without restarting Minecraft.
 
 Minecraft stores key rebindings in its normal `options.txt`. Every dotMOD key
 can be changed under Minecraft's Controls screen.
@@ -278,7 +300,14 @@ do not send custom packets or require dotMOD on the server.
 | `/dot pst dup <source> <new>` | Duplicate a preset |
 | `/dot pst exp <name>` | Copy safe preset JSON |
 | `/dot pst imp` | Import preset JSON from clipboard |
-| `/dot reload` | Reload configuration and player colors |
+| `/dot alias list` | List aliases and enabled state |
+| `/dot alias set <name> <template...>` | Create or update an alias |
+| `/dot alias remove\|enable\|disable <name>` | Mutate an existing alias |
+| `/dot commands` | Open pinned and recent commands |
+| `/dot recolor list` | List UUID-backed player colors |
+| `/dot recolor set <player> <hex>` | Color an exact tab-list profile |
+| `/dot recolor reset\|pick <player>` | Reset a color or open its picker |
+| `/dot reload` | Reload configuration and local service data |
 | `/dot prefix dotmod` | Use `dotMod:` |
 | `/dot prefix brackets` | Use `[dotMod]` |
 | `/dot prefix dot` | Use `.` |
@@ -338,9 +367,9 @@ Fabric server, Paper/Spigot server, or Realm.
 - Visible container contents are a frozen client-side snapshot. Player-backed
   duplicate slots, the real cursor stack, and computed crafting-result slots are
   excluded.
-- A server command named `/dot` or `/dotmod` may conflict with the client root.
-  Fabric's public client-command API does not expose the unmerged server command
-  tree, so dotMOD cannot reliably detect this server-side name collision.
+- Alias conflict checks use the active Fabric client dispatcher and the current
+  server command dispatcher. Commands hidden from the client by a server cannot
+  be detected until that server exposes them.
 - Quick Craft sends only normal inventory interactions, so server latency or
   server-side inventory restrictions can affect the result.
 
@@ -373,8 +402,9 @@ JUnit currently covers config validation, future-schema protection, legacy
 migration and retry, malformed UUID isolation, safe JSON/backup recovery,
 atomic storage, localization parity, ISM permissions and mutations, ItemStack
 component serialization, draft recovery/write protection, layout, catalog,
-preset CRUD/import, exact material comparison, recipe allocation, and cyclic
-dependency termination.
+preset CRUD/import, exact material comparison, recipe allocation, cyclic
+dependency termination, alias expansion/persistence, command history policy,
+strict HEX parsing, and player-profile lookup.
 
 ## License
 

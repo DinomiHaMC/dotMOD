@@ -44,9 +44,11 @@ source set, but the main source set does not depend on client classes.
    loads validated config.
 2. `PlayerColorService` loads UUID color data according to the persistence
    setting and subscribes to config saves.
-3. Vanilla HUD wrappers, custom widgets, and durability tick warnings register.
-4. `/dot` and `/dotmod` client commands are registered.
-5. Keybinds and handled-screen button hooks are registered.
+3. `CommandClientService` loads aliases and 100-entry command history, then the
+   outgoing command interceptor registers.
+4. Vanilla HUD wrappers, custom widgets, and durability tick warnings register.
+5. `/dot` and `/dotmod` client commands are registered.
+6. Keybinds and handled-screen button hooks are registered.
 
 This order prevents mixins, keybinds, and commands from observing an
 uninitialized configuration.
@@ -62,8 +64,8 @@ commandAliases, keybinds, interface
 ```
 
 `quickCraft` remains explicit because it is an existing independent feature.
-Categories for later stages contain only their global disabled feature switch;
-they are not exposed as controls until the corresponding feature exists.
+The Commands category exposes the existing `commandAliases.enabled` global
+switch; command history has no additional schema fields.
 
 `ConfigValidator` restores missing categories and fields, deduplicates and
 checks inventory slots, clamps numeric values, validates RGB colors, restores
@@ -99,6 +101,11 @@ actions, never per render tick.
 Player colors are keyed by UUID. Nicknames are not used as identity keys.
 Malformed serialized UUID keys are rejected individually so one bad entry does
 not discard other players' colors.
+
+Aliases and command history have independent versioned documents. History keeps
+at most 100 recent and 100 pinned entries, deduplicates by normalized
+slash-prefixed command, and excludes sensitive roots. Last-known player names
+are optional metadata in the UUID-keyed player-color document.
 
 ## HUD Widgets And Durability
 
@@ -283,14 +290,24 @@ supports `dotMod:`, `[dotMod]`, `.`, and a validated custom prefix, plus info,
 warning, error, and success styles. It also creates command click actions with
 hover text.
 
-`/dot` and `/dotmod` build the same Brigadier tree. They currently expose help,
-config, HUD, reload, and message-prefix operations. They are local Fabric
-commands and do not send their execution to the server.
+`/dot` and `/dotmod` build the same Brigadier tree. In addition to configuration,
+HUD, ISM, presets, reload, and prefix operations, Stage 7 adds alias CRUD,
+Fast Command List, and UUID recolor operations. These roots are local Fabric
+commands.
 
-Client-command conflicts with another client mod are logged. Fabric API does
-not expose a reliable server-only command tree after joining, so a server root
-with the same name cannot be detected safely without an additional packet
-mixin. This limitation is documented instead of relying on unstable internals.
+`OutgoingCommandInterceptor` uses `ALLOW_COMMAND`, `MODIFY_COMMAND`, `COMMAND`,
+and `COMMAND_CANCELED`. It computes an alias plan once, returns the final command
+from the modify event, records the accepted event once, and clears pending state
+on both outcomes. It never cancels and resends. Before expansion and alias
+mutation it rejects `dot`, `dotmod`, and roots in the active Fabric client or
+current server dispatcher. Expansion failures cancel the original typed command
+with localized feedback.
+
+`FastCommandListScreen` has no open/select send path. Execute and Enter call
+`sendChatCommand` once without a slash; dangerous administrative roots first use
+`DotConfirmationDialog`. `RecolorCommands` resolves exact case-insensitive names
+only from tab-list profiles and mutates colors by UUID. `DotColorPicker` edits a
+screen-local draft until Apply.
 
 ## UI Components
 
