@@ -39,7 +39,8 @@ custom packets.
 
 ### HUD Editor
 
-The `HUD` button opens a visual editor for selected vanilla HUD elements:
+The `HUD` button opens a visual editor for vanilla HUD sections and dotMOD
+widgets:
 
 - hearts;
 - armor;
@@ -49,23 +50,36 @@ The `HUD` button opens a visual editor for selected vanilla HUD elements:
 - experience level;
 - status effects;
 - boss bars;
-- scoreboard sidebar.
+- scoreboard sidebar;
+- equipped armor icons;
+- colored online players;
+- compact durability readings.
 
-Each element can be dragged independently. Positions are stored as pixel
-offsets from the element's vanilla position.
+Each element can be dragged independently. Positions use a nine-point screen
+anchor plus scaled GUI-pixel offsets and are clamped to the visible screen.
 
 The editor supports:
 
 - configurable grid snapping;
-- magnetic snapping to the original `dx = 0` and `dy = 0` positions;
+- grid snapping with matching visible spacing;
+- magnetic snapping to screen edges and centers;
 - edge-to-edge alignment with other HUD elements;
 - matching left, center, right, top, middle, and bottom coordinates;
 - visible cyan alignment guides;
 - configurable magnetic snap distance;
-- reset to vanilla offsets.
+- per-widget visibility, scale, anchor, and reset from a right-click menu;
+- opacity for custom widget surfaces and text;
+- real custom-widget previews, including hidden-widget ghost previews;
+- reset to registered defaults.
 
 The editor is available from the survival inventory, crafting table, and
 creative inventory. HUD positions are local and never affect the server.
+
+The Armor widget reads the four equipped armor slots. Colored Online includes
+only UUIDs currently listed in the client tab list and only displays entries
+that have a local player color. The Durability widget reads main hand, offhand,
+and armor stacks, uses a red-yellow-green interpolated scale, and can issue
+tick-based low-durability warnings with a monotonic cooldown.
 
 ### Player Name Colors
 
@@ -273,12 +287,15 @@ Fabric server, Paper/Spigot server, or Realm.
 ## Compatibility and Limitations
 
 - Minecraft 1.21.11 is the only supported game version for this release.
-- The mod uses version-specific client rendering mixins. Other mods that replace
-  the same HUD or player-label render paths can conflict.
-- HUD positions are pixel offsets and are not automatically clamped to the
-  screen after changing resolution or GUI scale.
+- The mod wraps vanilla Fabric HUD layers and uses version-specific player-label
+  mixins. Other mods that replace the same layers or label paths can conflict.
 - HUD editor rectangles approximate dynamic vanilla elements such as multi-row
   hearts, multiple boss bars, and variable-size scoreboards.
+- Fractional opacity applies to custom widget panels, bars, and text. Minecraft
+  item icons and wrapped vanilla HUD layers remain opaque; opacity zero hides a
+  wrapped vanilla layer.
+- The experience-bar placement wraps Minecraft's complete info-bar layer, which
+  can also contain mount-related bars.
 - Player colors depend on client-known entities and tab-list data.
 - ISM intentionally models the requested hotbar, main inventory, armor, and
   offhand slots (`0..40`). Minecraft 1.21.11's special body/saddle slots are not

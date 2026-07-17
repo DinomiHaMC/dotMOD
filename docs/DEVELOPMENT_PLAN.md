@@ -13,7 +13,8 @@ not committed when the audit started.
 | Stage 2 - InvSeeMenu | Complete |
 | Stage 3 - Inventory Presets | Complete |
 | Stage 4 - Preset Helper | Complete |
-| Stages 5-10 | Not started |
+| Stage 5 - HUD Widgets and Durability | Complete |
+| Stages 6-10 | Not started |
 
 The source-layout section below is the Stage 0 baseline. The current post-Stage
 1 architecture is documented in [`ARCHITECTURE.md`](ARCHITECTURE.md).
@@ -448,6 +449,12 @@ Goals:
 - Add a centralized durability service with interpolated colors and warning
   cooldowns.
 - Use only players present in the client tab list.
+
+Implementation note: Minecraft 1.21.11 exposes no safe global fractional-alpha
+state for an already-rendering vanilla HUD layer. Fractional alpha therefore
+applies to custom widget surfaces/text; vanilla wrappers support placement,
+scale, visibility, anchors, snapping, preview, and reset. Alpha zero is treated
+as hidden when supplied programmatically.
 
 Planned files:
 

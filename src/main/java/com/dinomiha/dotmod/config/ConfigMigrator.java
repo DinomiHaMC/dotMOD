@@ -33,6 +33,7 @@ public final class ConfigMigrator {
 
     MigrationBundle migrate(LegacyConfig legacy) {
         DotModConfig config = new DotModConfig();
+        config.schemaVersion = 3;
         config.general.enabled = legacy.modEnabled;
 
         config.quickCraft.enabled = legacy.quickCraftEnabled;

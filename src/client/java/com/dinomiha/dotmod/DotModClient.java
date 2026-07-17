@@ -5,6 +5,8 @@ import com.dinomiha.dotmod.config.ConfigService;
 import com.dinomiha.dotmod.config.PlayerColorService;
 import com.dinomiha.dotmod.gui.InventoryButtons;
 import com.dinomiha.dotmod.feature.preset.screen.PresetPanelController;
+import com.dinomiha.dotmod.feature.durability.DurabilityWarningController;
+import com.dinomiha.dotmod.hud.widget.HudWidgetRegistry;
 import com.dinomiha.dotmod.keybind.DotModKeybinds;
 import com.dinomiha.dotmod.mixin.HandledScreenAccessor;
 import net.fabricmc.api.ClientModInitializer;
@@ -21,6 +23,8 @@ public final class DotModClient implements ClientModInitializer {
     public void onInitializeClient() {
         ConfigService.initialize();
         PlayerColorService.initialize();
+        HudWidgetRegistry.register();
+        DurabilityWarningController.register();
         DotClientCommands.register();
         DotModKeybinds.register();
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {

@@ -17,14 +17,14 @@ src/main/java/
   config/       Pure versioned models, validation, and legacy migration
   feature/      Testable ISM model, session, layout, and serialization
   storage/      Paths, JSON documents, backup, and atomic persistence
-  hud/          Client-independent HUD element identifiers
+  hud/          Client-independent widget settings, placement, and snapping
 
 src/client/java/
   command/      Fabric client command registration
   config/       Runtime ConfigService, player-color service, config screen
   feature/      ISM screen, local catalog, launcher, and player snapshot source
   gui/          Inventory buttons, Quick Craft, and HUD editor
-  hud/          Runtime HUD layout and transforms
+  hud/          Fabric HUD layer wrappers, widgets, renderer, and editor control
   keybind/      Key registration and local toggle behavior
   message/      Centralized localized message formatting
   mixin/        Version-specific Minecraft render and screen hooks
@@ -44,15 +44,16 @@ source set, but the main source set does not depend on client classes.
    loads validated config.
 2. `PlayerColorService` loads UUID color data according to the persistence
    setting and subscribes to config saves.
-3. `/dot` and `/dotmod` client commands are registered.
-4. Keybinds and handled-screen button hooks are registered.
+3. Vanilla HUD wrappers, custom widgets, and durability tick warnings register.
+4. `/dot` and `/dotmod` client commands are registered.
+5. Keybinds and handled-screen button hooks are registered.
 
 This order prevents mixins, keybinds, and commands from observing an
 uninitialized configuration.
 
 ## Configuration
 
-`DotModConfig` has schema version `3` and these top-level categories:
+`DotModConfig` has schema version `4` and these top-level categories:
 
 ```text
 general, commands, hud, quickCraft, inventoryPresets, inventorySearch,
@@ -66,8 +67,9 @@ they are not exposed as controls until the corresponding feature exists.
 
 `ConfigValidator` restores missing categories and fields, deduplicates and
 checks inventory slots, clamps numeric values, validates RGB colors, restores
-all HUD offsets, and advances the schema version. Gson field initializers supply
-defaults for fields added in later compatible revisions.
+all registered HUD settings, and advances the schema version. Schema v3 HUD
+delta offsets migrate to stable ID-keyed anchor placements without deleting
+unknown add-on widget records.
 
 The legacy flat `config/dotmod.json` migration maps every existing field into
 the categorized model and moves UUID colors into their own document. Migration
@@ -97,6 +99,39 @@ actions, never per render tick.
 Player colors are keyed by UUID. Nicknames are not used as identity keys.
 Malformed serialized UUID keys are rejected individually so one bad entry does
 not discard other players' colors.
+
+## HUD Widgets And Durability
+
+The pure layout chain is:
+
+```text
+HudWidgetDefaults -> HudWidgetSettings -> HudPlacementResolver -> HudPlacement
+                                      -> HudSnapper
+```
+
+Settings contain visibility, nine-point screen anchor, X/Y offset, scale, and
+alpha. Resolution happens in scaled GUI pixels, uses scaled bounds, and always
+clamps to the current viewport. The editor and runtime renderer share this
+resolver. Dragging applies grid snap, widget/screen-edge magnetic snap, clamp,
+then converts the absolute result back to anchor-relative offsets.
+
+`VanillaHudWidgetRenderer` replaces Fabric vanilla HUD elements with
+exception-safe wrappers. Matrix transforms are restored in `finally`; the old
+paired HEAD/RETURN HUD mixins are no longer used. Fixed editor bounds remain
+approximations for dynamic vanilla content. Vanilla fractional alpha is not
+exposed because Minecraft 1.21.11 has no safe global DrawContext alpha.
+
+Custom widgets implement one local-coordinate `HudWidget` render contract and
+register before chat through `HudElementRegistry`. Armor reads equipped armor;
+Durability reads copied hand/armor stacks; Colored Online starts exclusively
+from `getListedPlayerListEntries()` and resolves colors by UUID from the existing
+in-memory player-color service.
+
+`DurabilityReading`, `DurabilityColorInterpolator`, and
+`DurabilityWarningService` are pure testable models. The client adapter runs
+warnings on `END_CLIENT_TICK` with `System.nanoTime()`, does no render-time IO,
+re-arms after repair, and limits all currently-low items before choosing one
+overlay message.
 
 ## InvSeeMenu
 

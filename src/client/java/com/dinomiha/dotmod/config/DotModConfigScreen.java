@@ -1,7 +1,8 @@
 package com.dinomiha.dotmod.config;
 
 import com.dinomiha.dotmod.DotModClient;
-import com.dinomiha.dotmod.hud.HudElement;
+import com.dinomiha.dotmod.hud.widget.HudAnchor;
+import com.dinomiha.dotmod.hud.widget.HudWidgetDefaults;
 import com.dinomiha.dotmod.keybind.DotModKeybinds;
 import com.dinomiha.dotmod.message.MessageService;
 import com.dinomiha.dotmod.message.MessageType;
@@ -132,15 +133,34 @@ public final class DotModConfigScreen {
                 .setTooltip(Text.translatable("config.dotmod.hud.magnetic_distance.tooltip"))
                 .setSaveConsumer(value -> config.hud.magneticSnapDistance = value)
                 .build());
-        for (HudElement element : HudElement.values()) {
-            DotModConfig.HudOffset offset = config.hud.offset(element);
-            Text elementName = Text.translatable(element.translationKey());
-            hud.addEntry(entries.startIntField(Text.translatable("config.dotmod.hud.offset_x", elementName), offset.dx)
-                    .setSaveConsumer(value -> config.hud.offset(element).dx = value)
+        for (var definition : HudWidgetDefaults.definitions()) {
+            var settings = config.hud.widget(definition.id());
+            Text elementName = Text.translatable(definition.translationKey());
+            hud.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.hud.visible", elementName), settings.visible)
+                    .setSaveConsumer(value -> config.hud.widget(definition.id()).visible = value)
                     .build());
-            hud.addEntry(entries.startIntField(Text.translatable("config.dotmod.hud.offset_y", elementName), offset.dy)
-                    .setSaveConsumer(value -> config.hud.offset(element).dy = value)
+            hud.addEntry(entries.startEnumSelector(
+                            Text.translatable("config.dotmod.hud.anchor", elementName), HudAnchor.class, settings.anchor)
+                    .setEnumNameProvider(value -> Text.translatable(
+                            "config.dotmod.hud.anchor." + value.name().toLowerCase(Locale.ROOT)))
+                    .setSaveConsumer(value -> config.hud.widget(definition.id()).anchor = value)
                     .build());
+            hud.addEntry(entries.startIntField(Text.translatable("config.dotmod.hud.offset_x", elementName), settings.offsetX)
+                    .setSaveConsumer(value -> config.hud.widget(definition.id()).offsetX = value)
+                    .build());
+            hud.addEntry(entries.startIntField(Text.translatable("config.dotmod.hud.offset_y", elementName), settings.offsetY)
+                    .setSaveConsumer(value -> config.hud.widget(definition.id()).offsetY = value)
+                    .build());
+            hud.addEntry(entries.startFloatField(Text.translatable("config.dotmod.hud.scale", elementName), settings.scale)
+                    .setMin(0.25F).setMax(4.0F)
+                    .setSaveConsumer(value -> config.hud.widget(definition.id()).scale = value)
+                    .build());
+            if (definition.custom()) {
+                hud.addEntry(entries.startFloatField(Text.translatable("config.dotmod.hud.alpha", elementName), settings.alpha)
+                        .setMin(0.0F).setMax(1.0F)
+                        .setSaveConsumer(value -> config.hud.widget(definition.id()).alpha = value)
+                        .build());
+            }
         }
         hud.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.hud.reset_offsets"), false)
                 .setSaveConsumer(value -> {
@@ -148,6 +168,31 @@ public final class DotModConfigScreen {
                         config.hud.resetOffsets();
                     }
                 })
+                .build());
+
+        ConfigCategory durability = builder.getOrCreateCategory(Text.translatable("config.dotmod.category.durability"));
+        durability.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.durability.enabled"), config.durability.enabled)
+                .setSaveConsumer(value -> config.durability.enabled = value)
+                .build());
+        durability.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.durability.warnings"), config.durability.warningsEnabled)
+                .setSaveConsumer(value -> config.durability.warningsEnabled = value)
+                .build());
+        durability.addEntry(entries.startFloatField(Text.translatable("config.dotmod.durability.threshold"), config.durability.warningThreshold)
+                .setMin(0.0F).setMax(1.0F)
+                .setSaveConsumer(value -> config.durability.warningThreshold = value)
+                .build());
+        durability.addEntry(entries.startIntField(Text.translatable("config.dotmod.durability.cooldown"), config.durability.warningCooldownSeconds)
+                .setMin(0).setMax(86400)
+                .setSaveConsumer(value -> config.durability.warningCooldownSeconds = value)
+                .build());
+        durability.addEntry(entries.startStrField(Text.translatable("config.dotmod.durability.low_color"), config.durability.lowColor)
+                .setSaveConsumer(value -> config.durability.lowColor = ColorUtil.normalizeHex(value, "#FF5555"))
+                .build());
+        durability.addEntry(entries.startStrField(Text.translatable("config.dotmod.durability.middle_color"), config.durability.middleColor)
+                .setSaveConsumer(value -> config.durability.middleColor = ColorUtil.normalizeHex(value, "#FFFF55"))
+                .build());
+        durability.addEntry(entries.startStrField(Text.translatable("config.dotmod.durability.high_color"), config.durability.highColor)
+                .setSaveConsumer(value -> config.durability.highColor = ColorUtil.normalizeHex(value, "#55FF55"))
                 .build());
 
         ConfigCategory nameColors = builder.getOrCreateCategory(Text.translatable("config.dotmod.category.player_colors"));

@@ -1,11 +1,14 @@
 package com.dinomiha.dotmod.config;
 
 import com.dinomiha.dotmod.hud.HudElement;
+import com.dinomiha.dotmod.hud.widget.HudWidgetDefaults;
+import com.dinomiha.dotmod.hud.widget.HudWidgetSettings;
 import com.dinomiha.dotmod.storage.UnsupportedDataVersionException;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -17,14 +20,14 @@ public final class ConfigValidator {
         if (config.schemaVersion > DotModConfig.CURRENT_SCHEMA_VERSION) {
             throw new UnsupportedDataVersionException("Unsupported dotMOD config schema " + config.schemaVersion);
         }
-        config.schemaVersion = DotModConfig.CURRENT_SCHEMA_VERSION;
+        int loadedSchema = config.schemaVersion;
         config.general = config.general == null ? new GeneralConfig() : config.general;
         config.commands = config.commands == null ? new CommandsConfig() : config.commands;
         config.hud = config.hud == null ? new HudConfig() : config.hud;
         config.quickCraft = config.quickCraft == null ? new QuickCraftConfig() : config.quickCraft;
         config.inventoryPresets = config.inventoryPresets == null ? new InventoryPresetsConfig() : config.inventoryPresets;
         config.inventorySearch = feature(config.inventorySearch);
-        config.durability = feature(config.durability);
+        config.durability = config.durability == null ? new DurabilityConfig() : config.durability;
         config.screenshots = feature(config.screenshots);
         config.deathHistory = feature(config.deathHistory);
         config.toggleWalk = config.toggleWalk == null ? new ToggleWalkConfig() : config.toggleWalk;
@@ -51,7 +54,11 @@ public final class ConfigValidator {
         config.hud.editorButtonOffsetY = clamp(config.hud.editorButtonOffsetY, -4096, 4096);
         config.hud.gridSize = clamp(config.hud.gridSize, 1, 16);
         config.hud.magneticSnapDistance = clamp(config.hud.magneticSnapDistance, 1, 16);
-        config.hud.offsets = offsets(config.hud.offsets);
+        if (loadedSchema < 4) {
+            migrateHudWidgets(config.hud);
+        }
+        config.hud.widgets = widgets(config.hud.widgets);
+        config.hud.offsets = null;
         config.hud.uniformNameTags = config.hud.uniformNameTags == null ? new UniformNameTagsConfig() : config.hud.uniformNameTags;
         if (!Float.isFinite(config.hud.uniformNameTags.size)) {
             config.hud.uniformNameTags.size = 1.0F;
@@ -62,7 +69,16 @@ public final class ConfigValidator {
         config.playerColors.greenColor = color(config.playerColors.greenColor, "#55FF55");
         config.playerColors.redColor = color(config.playerColors.redColor, "#FF5555");
         config.playerColors.defaultColor = color(config.playerColors.defaultColor, "#FFFFFF");
+        if (!Float.isFinite(config.durability.warningThreshold)) {
+            config.durability.warningThreshold = 0.15F;
+        }
+        config.durability.warningThreshold = Math.max(0.0F, Math.min(1.0F, config.durability.warningThreshold));
+        config.durability.warningCooldownSeconds = clamp(config.durability.warningCooldownSeconds, 0, 86400);
+        config.durability.lowColor = color(config.durability.lowColor, "#FF5555");
+        config.durability.middleColor = color(config.durability.middleColor, "#FFFF55");
+        config.durability.highColor = color(config.durability.highColor, "#55FF55");
         config.toggleWalk.toggleShift = config.toggleWalk.toggleShift == null ? new ToggleShiftConfig() : config.toggleWalk.toggleShift;
+        config.schemaVersion = DotModConfig.CURRENT_SCHEMA_VERSION;
     }
 
     private static FeatureConfig feature(FeatureConfig value) {
@@ -82,21 +98,60 @@ public final class ConfigValidator {
         return valid.isEmpty() ? new ArrayList<>(fallback) : new ArrayList<>(valid);
     }
 
-    private static Map<HudElement, DotModConfig.HudOffset> offsets(Map<HudElement, DotModConfig.HudOffset> values) {
-        EnumMap<HudElement, DotModConfig.HudOffset> result = new EnumMap<>(HudElement.class);
-        if (values != null) {
-            values.forEach((element, offset) -> {
-                if (element != null && offset != null) {
-                    offset.dx = clamp(offset.dx, -16384, 16384);
-                    offset.dy = clamp(offset.dy, -16384, 16384);
-                    result.put(element, offset);
+    private static void migrateHudWidgets(HudConfig hud) {
+        LinkedHashMap<String, HudWidgetSettings> migrated = new LinkedHashMap<>();
+        if (hud.widgets != null) {
+            hud.widgets.forEach((id, settings) -> {
+                if (id != null && settings != null) {
+                    migrated.put(id, settings);
                 }
             });
         }
-        for (HudElement element : HudElement.values()) {
-            result.computeIfAbsent(element, ignored -> new DotModConfig.HudOffset());
+        HudWidgetDefaults.settings().forEach(migrated::putIfAbsent);
+        hud.widgets = migrated;
+        if (hud.offsets == null) {
+            return;
         }
+        hud.offsets.forEach((element, offset) -> {
+            if (element != null && offset != null) {
+                HudWidgetSettings settings = hud.widgets.get(element.widgetId());
+                    settings.offsetX += clamp(offset.dx, -16384, 16384);
+                    settings.offsetY += clamp(offset.dy, -16384, 16384);
+            }
+        });
+    }
+
+    private static Map<String, HudWidgetSettings> widgets(Map<String, HudWidgetSettings> values) {
+        LinkedHashMap<String, HudWidgetSettings> result = new LinkedHashMap<>();
+        if (values != null) {
+            values.forEach((id, settings) -> {
+                if (id != null && !id.isBlank() && id.length() <= 128 && settings != null) {
+                    settings.anchor = settings.anchor == null
+                            ? defaultSettings(id).anchor
+                            : settings.anchor;
+                    settings.offsetX = clamp(settings.offsetX, -32768, 32768);
+                    settings.offsetY = clamp(settings.offsetY, -32768, 32768);
+                    settings.scale = finite(settings.scale, 1.0F, 0.25F, 4.0F);
+                    settings.alpha = finite(settings.alpha, 1.0F, 0.0F, 1.0F);
+                    result.put(id, settings);
+                }
+            });
+        }
+        HudWidgetDefaults.definitions().forEach(definition ->
+                result.putIfAbsent(definition.id(), definition.defaults()));
         return result;
+    }
+
+    private static HudWidgetSettings defaultSettings(String id) {
+        return HudWidgetDefaults.definitions().stream()
+                .filter(definition -> definition.id().equals(id))
+                .findFirst()
+                .map(com.dinomiha.dotmod.hud.widget.HudWidgetDefinition::defaults)
+                .orElseGet(HudWidgetSettings::new);
+    }
+
+    private static float finite(float value, float fallback, float min, float max) {
+        return Float.isFinite(value) ? Math.max(min, Math.min(max, value)) : fallback;
     }
 
     private static String color(String value, String fallback) {

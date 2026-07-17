@@ -37,6 +37,11 @@ Current JUnit coverage:
 - empty, partial, excess, and component-mismatched requirement progress;
 - competing recipe alternatives, repeated ingredients, and unknown recipes;
 - two-item recipe cycle termination and dependency depth limits.
+- schema v3 HUD offset migration and unknown widget preservation;
+- anchored/scaled placement, viewport clamping, screen-edge/widget snapping,
+  and alpha color application;
+- durability reading boundaries and red-yellow-green interpolation;
+- monotonic durability warning cooldown, stale-key cleanup, and repair re-arm.
 
 Run the complete verification and build:
 
@@ -165,6 +170,35 @@ Run the complete verification and build:
 - Verify no item moves, crafting grid changes, inventory click, recipe click,
   craft request, or custom packet occurs anywhere in helper UI.
 
+## Stage 5 Manual Checklist
+
+### HUD Editor And Widgets
+
+- Drag every vanilla section and custom widget at GUI scales 1 through Auto,
+  resize the window, and verify scaled placements remain on-screen.
+- Test every anchor, grid spacing, screen-edge and widget-edge snapping, cyan
+  guides, hidden ghost previews, context-menu dismissal, selected reset, and
+  reset-all persistence.
+- Toggle visibility and scales for vanilla layers. Verify context operations and
+  config-screen values agree after restart and `/dot reload`.
+- Test Armor with empty, partial, and full equipment. Test Durability with all
+  six supported slots, undamaged/damaged/broken boundaries, and no damageable
+  items.
+- Test custom widget opacity at zero/intermediate/full values. Verify panel,
+  bars, and text change while Minecraft item icons remain opaque as documented.
+- Test Colored Online with colored online/offline players, duplicate display
+  names, spectators, and server-provided display names. Confirm no player absent
+  from `listed=true` tab data appears.
+
+### Durability Warnings
+
+- Cross the threshold, remain below it, repair above it, replace a stack, and
+  test cooldown zero/boundary/long values under varying FPS and tick timing.
+- Put several items below the threshold simultaneously and verify only one
+  overlay appears per tick without a multi-tick initial burst.
+- Verify creative mode, disconnect, disabled feature, and missing player clear
+  warning state without config writes or crashes.
+
 ## Future Stage Checklists
 
 The following checks become active only after their implementation stage. They
@@ -185,12 +219,6 @@ coverage.
   real-command conflicts, direct and indirect cycles, and disabled aliases.
 - Test recolor against tab-list players, unknown players, reset/list, picker,
   UUID identity, and invalid HEX values.
-
-### Durability And HUD Widgets
-
-- Test every armor/durability mode, orientation, scale, opacity, snapping,
-  context menu, warning threshold, interpolation endpoints, and alert cooldown.
-- Test Colored Online sorting/filtering and confirm only tab-list data appears.
 
 ### Death And Screenshot+
 
