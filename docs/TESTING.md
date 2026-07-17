@@ -255,12 +255,19 @@ client or platform environment.
 
 ### Death And Screenshot+
 
+- Automated coverage verifies death model/repository versioning, screenshot
+  failure retention and path constraints, platform argument arrays, screenshot
+  path policy, schema-6 enablement/current-schema false preservation, and
+  English/Russian key parity.
 - Die in each dimension and after changing servers/worlds; verify coordinates,
   cause, effects, inventory, armor, offhand, screenshot, and interactive links.
 - Force screenshot failure and verify the remaining death record survives.
 - Test history list/show/delete/clear confirmation and missing files.
 - Test image/path copy, open, show, and built-in viewing on Linux, Windows, and
   macOS when those platforms are available.
+- Verify dedupe resets after respawn and a queued capture from a disconnected
+  world is marked failed without affecting the new world.
+- Verify ordinary F2 screenshots remain vanilla and unaffected.
 
 ### Toggle Walk And Freelook
 

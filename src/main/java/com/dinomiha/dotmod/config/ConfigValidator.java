@@ -31,17 +31,19 @@ public final class ConfigValidator {
             config.inventorySearch.enabled = true;
         }
         config.durability = config.durability == null ? new DurabilityConfig() : config.durability;
+        config.screenshots = feature(config.screenshots);
+        config.deathHistory = feature(config.deathHistory);
+        config.commandAliases = feature(config.commandAliases);
         if (loadedSchema < 6) {
             config.inventorySearch.enabled = true;
             config.durability.enabled = true;
             config.commandAliases.enabled = true;
+            config.screenshots.enabled = true;
+            config.deathHistory.enabled = true;
         }
-        config.screenshots = feature(config.screenshots);
-        config.deathHistory = feature(config.deathHistory);
         config.toggleWalk = config.toggleWalk == null ? new ToggleWalkConfig() : config.toggleWalk;
         config.freelook = feature(config.freelook);
         config.playerColors = config.playerColors == null ? new PlayerColorsConfig() : config.playerColors;
-        config.commandAliases = feature(config.commandAliases);
         config.keybinds = config.keybinds == null ? new KeybindsConfig() : config.keybinds;
         config.interfaceConfig = config.interfaceConfig == null ? new InterfaceConfig() : config.interfaceConfig;
         config.inventoryPresets.panelSide = config.inventoryPresets.panelSide == null

@@ -10,6 +10,7 @@ import com.dinomiha.dotmod.feature.invsee.InvSeeService;
 import com.dinomiha.dotmod.feature.commandalias.AliasCommands;
 import com.dinomiha.dotmod.feature.commandalias.CommandClientService;
 import com.dinomiha.dotmod.feature.commandlist.screen.FastCommandListScreen;
+import com.dinomiha.dotmod.feature.death.command.DeathCommands;
 import com.dinomiha.dotmod.feature.playercolor.RecolorCommands;
 import com.dinomiha.dotmod.feature.preset.command.PresetCommands;
 import com.dinomiha.dotmod.gui.HudEditorScreen;
@@ -64,6 +65,7 @@ public final class DotClientCommands {
                 .then(PresetCommands.build(root))
                 .then(PresetCommands.buildLong(root))
                 .then(AliasCommands.build())
+                .then(DeathCommands.build())
                 .then(literal("commands")
                         .executes(context -> openCommands(context.getSource())))
                 .then(RecolorCommands.build())
@@ -125,6 +127,12 @@ public final class DotClientCommands {
                 Text.translatable("command.dotmod.help.commands"),
                 "/" + root + " commands",
                 Text.translatable("command.dotmod.help.commands.tooltip")
+        ));
+        actions.append(Text.literal("  "));
+        actions.append(MessageService.commandAction(
+                Text.translatable("command.dotmod.help.deaths"),
+                "/" + root + " deaths",
+                Text.translatable("command.dotmod.help.deaths.tooltip")
         ));
         MessageService.send(source, actions, MessageType.INFO);
         return Command.SINGLE_SUCCESS;

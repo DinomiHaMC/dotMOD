@@ -599,6 +599,10 @@ Suggested commit: `feat: add command tools and aliases`
 
 ### Stage 8 - Death History and Screenshot+
 
+Status: **Implemented**. Death History and deferred death screenshots meet the
+exit criteria. Ordinary F2 remains vanilla; Screenshot+ enhancement is currently
+limited to death captures.
+
 Goals:
 
 - Capture death metadata and a local inventory/effects snapshot.
@@ -607,24 +611,22 @@ Goals:
 - Add Screenshot+ messages and a safe cross-platform service.
 - Provide image/path copy fallback and a built-in image viewer.
 
-Planned files:
+Implemented components:
 
 ```text
 feature/death/model/DeathRecord.java
 feature/death/model/DeathSnapshot.java
-feature/death/DeathCaptureService.java
+feature/death/DeathClientService.java
 feature/death/DeathRepository.java
 feature/death/DeathScreenshotQueue.java
 feature/death/command/DeathCommands.java
 feature/death/screen/DeathHistoryScreen.java
-feature/screenshot/ScreenshotService.java
+feature/screenshot/ClientIoExecutor.java
 feature/screenshot/ScreenshotResult.java
-feature/screenshot/PlatformService.java
-feature/screenshot/LinuxPlatformService.java
-feature/screenshot/WindowsPlatformService.java
-feature/screenshot/MacPlatformService.java
+feature/screenshot/DesktopPlatformService.java
 feature/screenshot/screen/ImageViewerScreen.java
-mixin/ScreenshotRecorderMixin.java
+mixin/ClientPlayNetworkHandlerDeathMixin.java
+mixin/MinecraftClientRenderMixin.java
 src/test/java/com/dinomiha/dotmod/feature/death/*
 ```
 

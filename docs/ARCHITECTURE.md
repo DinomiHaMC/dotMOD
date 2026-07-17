@@ -42,13 +42,15 @@ source set, but the main source set does not depend on client classes.
 
 1. `ConfigService` creates storage paths, migrates legacy data if needed, and
    loads validated config.
-2. `PlayerColorService` loads UUID color data according to the persistence
+2. `DeathClientService` initializes after config and acquires the active registry
+   manager lazily, replacing its repository when the connection changes.
+3. `PlayerColorService` loads UUID color data according to the persistence
    setting and subscribes to config saves.
-3. `CommandClientService` loads aliases and 100-entry command history, then the
+4. `CommandClientService` loads aliases and 100-entry command history, then the
    outgoing command interceptor registers.
-4. Vanilla HUD wrappers, custom widgets, and durability tick warnings register.
-5. `/dot` and `/dotmod` client commands are registered.
-6. Keybinds and handled-screen button hooks are registered.
+5. Vanilla HUD wrappers, custom widgets, and durability tick warnings register.
+6. `/dot` and `/dotmod` client commands are registered.
+7. Keybinds and handled-screen button hooks are registered.
 
 This order prevents mixins, keybinds, and commands from observing an
 uninitialized configuration.
@@ -106,6 +108,28 @@ Aliases and command history have independent versioned documents. History keeps
 at most 100 recent and 100 pinned entries, deduplicates by normalized
 slash-prefixed command, and excludes sensitive roots. Last-known player names
 are optional metadata in the UUID-keyed player-color document.
+
+## Death Capture And Images
+
+The `ClientPlayNetworkHandler.onDeathMessage` mixin injects immediately after
+vanilla's main-thread handoff and accepts only the local packet entity. The
+service deduplicates until the player is alive, replaced, or disconnected. It
+copies packet text, identity, world position, XP, 41 inventory slots, bounded
+effects, and best-effort recent damage data, then creates the record before
+screenshot work can begin.
+
+`DeathScreenshotQueue` stores the record UUID plus expected network and world
+identity. The `MinecraftClient.render` mixin runs immediately after
+`GameRenderer.render`, starts at most one capture per frame, and hands the
+`NativeImage` to the client IO executor. PNG writing is constrained to
+`deaths/images/<uuid>.png`; the image is always closed and the saved/failed
+repository update returns to the client executor. Records survive capture
+failures.
+
+Image viewing loads and validates a non-symlink PNG off-thread, registers its
+texture on the client thread, aspect-fits it, and destroys the texture on close.
+Desktop open uses `PlatformCommandFactory` and `ProcessBuilder(List<String>)`
+without a shell or client-thread wait. Vanilla F2 capture is not mixed into.
 
 ## HUD Widgets And Durability
 
@@ -292,7 +316,7 @@ hover text.
 
 `/dot` and `/dotmod` build the same Brigadier tree. In addition to configuration,
 HUD, ISM, presets, reload, and prefix operations, Stage 7 adds alias CRUD,
-Fast Command List, and UUID recolor operations. These roots are local Fabric
+ Fast Command List, UUID recolor, and Death History operations. These roots are local Fabric
 commands.
 
 `OutgoingCommandInterceptor` uses `ALLOW_COMMAND`, `MODIFY_COMMAND`, `COMMAND`,

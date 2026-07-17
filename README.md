@@ -244,6 +244,22 @@ picker for an exact tab-list profile. HEX input is strictly `#RRGGBB` or
 `RRGGBB`. Picker changes remain a draft until **Apply**; names are stored only as
 last-known display metadata and never replace UUID identity.
 
+### Death History and Screenshots
+
+When enabled, dotMOD records one local entry per death before requesting any
+screenshot work. Each record includes the plain death message, player and
+dimension identity, precise and block coordinates, selected hotbar slot, XP,
+active effects, best-effort recent damage information, and a frozen 41-slot
+inventory snapshot.
+
+Death screenshots are captured after a later rendered frame and encoded off the
+render thread to `config/dotmod/deaths/images/<uuid>.png`. A failed capture is
+recorded without deleting the death entry. `/dot deaths` opens the history
+screen; commands also provide details, inventory, built-in image viewing, path
+copying, desktop opening, confirmed deletion, and confirmed clearing. Desktop
+processes use direct argument arrays without a shell. Ordinary vanilla F2
+screenshots are unchanged; Screenshot+ currently applies only to death captures.
+
 ### Configuration
 
 The configuration screen is available through Mod Menu or `/dot config`.
@@ -268,6 +284,8 @@ config/dotmod/player-colors.json
 config/dotmod/invsee-draft.json
 config/dotmod/command-aliases.json
 config/dotmod/command-history.json
+config/dotmod/deaths/<uuid>.json
+config/dotmod/deaths/images/<uuid>.png
 ```
 
 Each subsystem has its own path under `config/dotmod/`. Writes use a temporary
@@ -322,6 +340,10 @@ do not send custom packets or require dotMOD on the server.
 | `/dot recolor list` | List UUID-backed player colors |
 | `/dot recolor set <player> <hex>` | Color an exact tab-list profile |
 | `/dot recolor reset\|pick <player>` | Reset a color or open its picker |
+| `/dot deaths [list]` | Open Death History |
+| `/dot deaths show\|inventory\|view\|copy\|open <id-prefix>` | Act on a death record |
+| `/dot deaths delete <id-prefix>` | Delete a death record after confirmation |
+| `/dot deaths clear` | Clear death history after confirmation |
 | `/dot reload` | Reload configuration and local service data |
 | `/dot prefix dotmod` | Use `dotMod:` |
 | `/dot prefix brackets` | Use `[dotMod]` |

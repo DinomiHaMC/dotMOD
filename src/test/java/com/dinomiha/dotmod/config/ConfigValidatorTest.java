@@ -139,13 +139,15 @@ class ConfigValidatorTest {
         assertTrue(explicitNull.inventorySearch.enabled);
         assertTrue(disabled.durability.enabled);
         assertTrue(disabled.commandAliases.enabled);
+        assertTrue(disabled.deathHistory.enabled);
+        assertTrue(disabled.screenshots.enabled);
     }
 
     @Test
     void currentSchemaPreservesExplicitFeatureChoices() {
         Gson gson = new Gson();
         DotModConfig current = gson.fromJson(
-                "{\"schemaVersion\":6,\"inventorySearch\":{\"enabled\":false},\"durability\":{\"enabled\":false},\"commandAliases\":{\"enabled\":false}}",
+                "{\"schemaVersion\":6,\"inventorySearch\":{\"enabled\":false},\"durability\":{\"enabled\":false},\"commandAliases\":{\"enabled\":false},\"deathHistory\":{\"enabled\":false},\"screenshots\":{\"enabled\":false}}",
                 DotModConfig.class
         );
 
@@ -154,5 +156,7 @@ class ConfigValidatorTest {
         assertFalse(current.inventorySearch.enabled);
         assertFalse(current.durability.enabled);
         assertFalse(current.commandAliases.enabled);
+        assertFalse(current.deathHistory.enabled);
+        assertFalse(current.screenshots.enabled);
     }
 }

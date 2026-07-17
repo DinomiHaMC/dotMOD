@@ -40,6 +40,12 @@ public final class DotModConfigScreen {
         general.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.general.enabled"), config.general.enabled)
                 .setSaveConsumer(value -> config.general.enabled = value)
                 .build());
+        general.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.death_history.enabled"), config.deathHistory.enabled)
+                .setSaveConsumer(value -> config.deathHistory.enabled = value)
+                .build());
+        general.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.screenshots.enabled"), config.screenshots.enabled)
+                .setSaveConsumer(value -> config.screenshots.enabled = value)
+                .build());
 
         ConfigCategory commands = builder.getOrCreateCategory(Text.translatable("config.dotmod.category.commands"));
         commands.addEntry(entries.startEnumSelector(

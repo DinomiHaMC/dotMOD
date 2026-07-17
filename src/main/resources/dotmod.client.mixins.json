@@ -4,11 +4,13 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "CreativeInventorySearchInputMixin",
+    "ClientPlayNetworkHandlerDeathMixin",
     "HandledScreenAccessor",
     "HandledScreenSearchMixin",
     "LabelCommandRendererCommandsMixin",
     "PlayerEntityRendererMixin",
-    "PlayerListHudMixin"
+    "PlayerListHudMixin",
+    "MinecraftClientRenderMixin"
   ],
   "injectors": {
     "defaultRequire": 1
