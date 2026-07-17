@@ -5,6 +5,7 @@ import com.dinomiha.dotmod.feature.preset.PresetException;
 import com.dinomiha.dotmod.feature.preset.PresetError;
 import com.dinomiha.dotmod.feature.preset.PresetNameValidator;
 import com.dinomiha.dotmod.feature.preset.PresetRecord;
+import com.dinomiha.dotmod.feature.preset.helper.PresetHelperClientService;
 import com.dinomiha.dotmod.message.MessageService;
 import com.dinomiha.dotmod.message.MessageType;
 import com.dinomiha.dotmod.ui.component.DotConfirmationDialog;
@@ -42,6 +43,10 @@ public final class PresetCommands {
                         .executes(context -> requestDelete(context.getSource(), name(context, "name")))))
                 .then(literal("shw").then(existingName("name")
                         .executes(context -> show(context.getSource(), name(context, "name")))))
+                .then(literal("hlp")
+                        .executes(context -> helper(context.getSource(), null))
+                        .then(existingName("name")
+                                .executes(context -> helper(context.getSource(), name(context, "name")))))
                 .then(literal("ren").then(existingName("name")
                         .then(argument("new_name", StringArgumentType.string())
                                 .executes(context -> rename(
@@ -125,6 +130,33 @@ public final class PresetCommands {
                         throw new PresetException(PresetError.STALE_DATA, "Preset changed before opening");
                     }
                     PresetClientService.openView(source.getClient(), null, fresh);
+                } catch (PresetException exception) {
+                    PresetClientService.report(exception);
+                }
+            });
+        });
+    }
+
+    private static int helper(FabricClientCommandSource source, String name) {
+        return run(source, () -> {
+            PresetRecord record;
+            if (name == null) {
+                record = PresetClientService.active(source.getClient()).orElse(null);
+                if (record == null) {
+                    MessageService.send(source, Text.translatable("command.dotmod.preset.helper.no_active"), MessageType.WARNING);
+                    return;
+                }
+            } else {
+                record = PresetClientService.require(source.getClient(), name);
+            }
+            PresetRecord requested = record;
+            source.getClient().send(() -> {
+                try {
+                    PresetRecord fresh = PresetClientService.require(source.getClient(), requested.preset().id());
+                    if (!fresh.revision().equals(requested.revision())) {
+                        throw new PresetException(PresetError.STALE_DATA, "Preset changed before helper capture");
+                    }
+                    PresetHelperClientService.open(source.getClient(), null, fresh);
                 } catch (PresetException exception) {
                     PresetClientService.report(exception);
                 }

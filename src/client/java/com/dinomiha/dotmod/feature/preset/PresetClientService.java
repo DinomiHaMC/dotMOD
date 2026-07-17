@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import java.time.Clock;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 public final class PresetClientService {
@@ -31,6 +32,10 @@ public final class PresetClientService {
 
     public static List<PresetRecord> list(MinecraftClient client) {
         return context(client).repository().list();
+    }
+
+    public static Optional<PresetRecord> active(MinecraftClient client) {
+        return context(client).repository().active();
     }
 
     public static PresetRecord require(MinecraftClient client, String name) {

@@ -164,6 +164,22 @@ Preset JSON export/import uses the system clipboard. Import accepts at most
 1 MiB, validates a fixed field set and the complete ItemStack payload before any
 repository write, and never executes code or accepts a destination path.
 
+### Preset Helper
+
+`/dot pst hlp` opens the active preset in read-only ISM mode. Missing virtual
+slots have an orange border, and the Materials action opens exact
+item-and-component counts for the frozen player inventory plus any container
+that was visible when the helper opened. `/dot pst hlp <name>` inspects a
+specific preset. The same action is available in the preset context menu and as
+an unbound, configurable keybind.
+
+The material view reports required, available, missing, complete, and overall
+progress values. It supports name/ID search and All, Missing, Complete, and
+Craftable filters. Client-known recipe options show output count, crafts needed,
+crafts possible from the snapshot, immediate ingredient deficits, and a bounded
+cycle-safe dependency tree. The helper is informational: it never fills a grid,
+moves an item, requests a recipe craft, or changes the real inventory.
+
 ### Configuration
 
 The configuration screen is available through Mod Menu or `/dot config`.
@@ -172,6 +188,7 @@ Current categories are:
 - General;
 - Commands;
 - Quick Craft;
+- Inventory Presets;
 - HUD Editor;
 - Name Colors;
 - Uniform Name Tags;
@@ -216,6 +233,7 @@ do not send custom packets or require dotMOD on the server.
 | `/dot pst crt <name>` | Create a preset through creative ISM |
 | `/dot pst dlt <name>` | Delete after confirmation |
 | `/dot pst shw <name>` | Open read-only ISM view |
+| `/dot pst hlp [name]` | Compare active or named preset materials |
 | `/dot pst ren <old> <new>` | Rename a preset |
 | `/dot pst dup <source> <new>` | Duplicate a preset |
 | `/dot pst exp <name>` | Copy safe preset JSON |
@@ -271,6 +289,12 @@ Fabric server, Paper/Spigot server, or Realm.
 - A preset whose registry data is unavailable in the current world remains
   untouched on disk and reserves its UUID/name, but cannot be opened until the
   required registry data is available again.
+- Preset Helper recipes are limited to recipe displays known to the current
+  client recipe book. Locked, server-only, or non-declarative special recipes
+  may be absent or marked as having unknown ingredients.
+- Visible container contents are a frozen client-side snapshot. Player-backed
+  duplicate slots, the real cursor stack, and computed crafting-result slots are
+  excluded.
 - A server command named `/dot` or `/dotmod` may conflict with the client root.
   Fabric's public client-command API does not expose the unmerged server command
   tree, so dotMOD cannot reliably detect this server-side name collision.
@@ -305,8 +329,9 @@ Project documentation:
 JUnit currently covers config validation, future-schema protection, legacy
 migration and retry, malformed UUID isolation, safe JSON/backup recovery,
 atomic storage, localization parity, ISM permissions and mutations, ItemStack
-component serialization, draft recovery/write protection, layout, catalog, and
-player snapshot boundaries.
+component serialization, draft recovery/write protection, layout, catalog,
+preset CRUD/import, exact material comparison, recipe allocation, and cyclic
+dependency termination.
 
 ## License
 

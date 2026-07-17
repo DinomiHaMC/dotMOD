@@ -5,6 +5,7 @@ import com.dinomiha.dotmod.config.PresetPanelSide;
 import com.dinomiha.dotmod.feature.preset.PresetClientService;
 import com.dinomiha.dotmod.feature.preset.PresetException;
 import com.dinomiha.dotmod.feature.preset.PresetRecord;
+import com.dinomiha.dotmod.feature.preset.helper.PresetHelperClientService;
 import com.dinomiha.dotmod.message.MessageService;
 import com.dinomiha.dotmod.message.MessageType;
 import com.dinomiha.dotmod.mixin.HandledScreenAccessor;
@@ -298,10 +299,12 @@ public final class PresetPanelController {
 
     private void showContext(PresetRecord record, net.minecraft.client.gui.Click click) {
         int width = Math.min(112, screen.width - 8);
-        int height = DotContextMenu.ROW_HEIGHT * 4 + 2;
+        int height = DotContextMenu.ROW_HEIGHT * 5 + 2;
         int x = Math.max(4, Math.min(screen.width - width - 4, (int) click.x()));
         int y = Math.max(4, Math.min(screen.height - height - 4, (int) click.y()));
         contextMenu.show(x, y, width, List.of(
+                new DotContextMenu.Action(Text.translatable("screen.dotmod.preset.context.helper"), null, true,
+                        () -> withFresh(record, fresh -> PresetHelperClientService.open(client, screen, fresh))),
                 new DotContextMenu.Action(Text.translatable("screen.dotmod.preset.context.view"), null, true, () -> withFresh(record, fresh -> PresetClientService.openView(client, screen, fresh))),
                 new DotContextMenu.Action(Text.translatable("screen.dotmod.preset.context.edit"), null, true, () -> withFresh(record, fresh -> PresetClientService.openEdit(client, screen, fresh))),
                 new DotContextMenu.Action(Text.translatable("screen.dotmod.preset.context.export"), null, true, () -> withFresh(record, this::export)),

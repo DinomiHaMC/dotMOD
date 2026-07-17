@@ -196,6 +196,7 @@ public final class DotModConfigScreen {
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.reset_name")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.uniform_name_tags")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.toggle_shift")).build());
+        keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.preset_helper")).build());
         keybinds.addEntry(entries.startTextDescription(Text.translatable("config.dotmod.keybinds.controls_hint")).build());
 
         return builder.build();

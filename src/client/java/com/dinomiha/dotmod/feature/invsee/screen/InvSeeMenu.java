@@ -30,6 +30,7 @@ import org.lwjgl.glfw.GLFW;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 public final class InvSeeMenu extends Screen {
     private static final int PANEL_COLOR = 0xB0181818;
@@ -40,6 +41,8 @@ public final class InvSeeMenu extends Screen {
     private final InvSeeInputController inputController;
     private final InvSeeSaveTarget saveTarget;
     private final RegistryWrapper.WrapperLookup registries;
+    private final InvSeeSupplement supplement;
+    private final BooleanSupplier parentValid;
     private final LocalItemCatalog catalog;
     private final VirtualInventorySerializer serializer = new VirtualInventorySerializer();
     private final Gson gson = new GsonBuilder().disableHtmlEscaping().create();
@@ -56,6 +59,7 @@ public final class InvSeeMenu extends Screen {
     private ButtonWidget deleteButton;
     private ButtonWidget copyButton;
     private ButtonWidget panelButton;
+    private ButtonWidget supplementButton;
     private int selectedInventorySlot;
     private int selectedCatalogIndex = -1;
     private int catalogFirstRow;
@@ -76,15 +80,44 @@ public final class InvSeeMenu extends Screen {
             InvSeeSaveTarget saveTarget,
             RegistryWrapper.WrapperLookup registries
     ) {
+        this(parent, title, session, saveTarget, registries, null, () -> true);
+    }
+
+    public InvSeeMenu(
+            Screen parent,
+            Text title,
+            InvSeeSession session,
+            InvSeeSaveTarget saveTarget,
+            RegistryWrapper.WrapperLookup registries,
+            InvSeeSupplement supplement
+    ) {
+        this(parent, title, session, saveTarget, registries, supplement, () -> true);
+    }
+
+    public InvSeeMenu(
+            Screen parent,
+            Text title,
+            InvSeeSession session,
+            InvSeeSaveTarget saveTarget,
+            RegistryWrapper.WrapperLookup registries,
+            InvSeeSupplement supplement,
+            BooleanSupplier parentValid
+    ) {
         super(title);
         this.parent = parent;
         this.session = session;
         this.inputController = new InvSeeInputController(session);
         this.saveTarget = saveTarget;
         this.registries = registries;
+        this.supplement = supplement;
+        this.parentValid = parentValid;
         this.catalog = session.mode().allows(InvSeeCapability.CATALOG) ? LocalItemCatalog.create() : null;
         if (catalog != null) {
             filteredCatalog = catalog.search("");
+        }
+        if (supplement != null) {
+            status = supplement.summary();
+            statusColor = supplement.warningSlots().isEmpty() ? 0x55FF55 : 0xFFAA00;
         }
     }
 
@@ -133,6 +166,7 @@ public final class InvSeeMenu extends Screen {
                 y = mainY + 58;
             }
             VirtualSlotWidget widget = new VirtualSlotWidget(index, x, y, textRenderer, this::onInventorySlotPressed);
+            widget.setWarning(supplement != null && supplement.warningSlots().contains(index));
             inventorySlots.add(addDrawableChild(widget));
         }
     }
@@ -196,6 +230,11 @@ public final class InvSeeMenu extends Screen {
 
     private void createFooterButtons() {
         saveButton = footerButton(0, Text.translatable("screen.dotmod.ism.save"), button -> save());
+        supplementButton = footerButton(0, supplement == null ? Text.empty() : supplement.actionLabel(), button -> {
+            if (supplement != null) {
+                supplement.action().accept(this);
+            }
+        });
         rollbackButton = footerButton(1, Text.translatable("screen.dotmod.ism.rollback"), button -> rollback());
         deleteButton = footerButton(2, Text.translatable("screen.dotmod.ism.delete"), button -> deleteSelected());
         copyButton = footerButton(3, Text.translatable("screen.dotmod.ism.copy"), button -> copySelectedInfo());
@@ -358,6 +397,7 @@ public final class InvSeeMenu extends Screen {
         deleteButton.active = inventoryVisible && !session.getStack(selectedInventorySlot).isEmpty();
         copyButton.active = inventoryVisible && !session.getStack(selectedInventorySlot).isEmpty();
         panelButton.visible = layout.compact();
+        supplementButton.visible = supplement != null;
         panelButton.setMessage(Text.translatable(showCatalogPanel
                 ? "screen.dotmod.ism.panel.inventory"
                 : "screen.dotmod.ism.panel.catalog"));
@@ -678,7 +718,7 @@ public final class InvSeeMenu extends Screen {
 
     private void closeDirectly() {
         if (client != null) {
-            client.setScreen(parent);
+            client.setScreen(parentValid.getAsBoolean() ? parent : null);
         }
     }
 

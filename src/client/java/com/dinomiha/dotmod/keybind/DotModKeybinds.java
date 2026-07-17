@@ -4,6 +4,10 @@ import com.dinomiha.dotmod.config.ConfigService;
 import com.dinomiha.dotmod.config.DotModConfig;
 import com.dinomiha.dotmod.message.MessageService;
 import com.dinomiha.dotmod.message.MessageType;
+import com.dinomiha.dotmod.feature.preset.PresetClientService;
+import com.dinomiha.dotmod.feature.preset.PresetException;
+import com.dinomiha.dotmod.feature.preset.PresetRecord;
+import com.dinomiha.dotmod.feature.preset.helper.PresetHelperClientService;
 import com.dinomiha.dotmod.util.NameColorManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -11,6 +15,7 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.StickyKeyBinding;
+import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Identifier;
 import net.minecraft.text.Text;
@@ -23,6 +28,7 @@ public final class DotModKeybinds {
     private static KeyBinding resetName;
     private static KeyBinding uniformNameTags;
     private static KeyBinding toggleShift;
+    private static KeyBinding presetHelper;
     private static boolean forcingSneak;
 
     private DotModKeybinds() {
@@ -33,6 +39,7 @@ public final class DotModKeybinds {
         redName = register("key.dotmod.red_name", GLFW.GLFW_KEY_R);
         resetName = register("key.dotmod.reset_name", GLFW.GLFW_KEY_V);
         uniformNameTags = register("key.dotmod.uniform_name_tags", GLFW.GLFW_KEY_N);
+        presetHelper = register("key.dotmod.preset_helper", InputUtil.UNKNOWN_KEY.getCode());
         toggleShift = KeyBindingHelper.registerKeyBinding(new KeyBinding(
                 "key.dotmod.toggle_shift",
                 InputUtil.Type.KEYSYM,
@@ -109,7 +116,32 @@ public final class DotModKeybinds {
                 }
             }
         }
+        while (presetHelper.wasPressed()) {
+            if (config.inventoryPresets.enabled) {
+                openPresetHelper(client);
+            }
+        }
         updateSneakState(client);
+    }
+
+    private static void openPresetHelper(MinecraftClient client) {
+        if (client.player == null || client.world == null || client.getNetworkHandler() == null) {
+            MessageService.sendChat(Text.translatable("message.dotmod.preset.helper.no_world"), MessageType.WARNING);
+            return;
+        }
+        if (client.currentScreen != null && !(client.currentScreen instanceof HandledScreen<?>)) {
+            return;
+        }
+        try {
+            PresetRecord active = PresetClientService.active(client).orElse(null);
+            if (active == null) {
+                MessageService.sendChat(Text.translatable("command.dotmod.preset.helper.no_active"), MessageType.WARNING);
+                return;
+            }
+            PresetHelperClientService.open(client, client.currentScreen, active);
+        } catch (PresetException exception) {
+            PresetClientService.report(exception);
+        }
     }
 
     private static void updateSneakState(MinecraftClient client) {

@@ -12,7 +12,8 @@ not committed when the audit started.
 | Stage 1 - Foundation | Complete |
 | Stage 2 - InvSeeMenu | Complete |
 | Stage 3 - Inventory Presets | Complete |
-| Stages 4-10 | Not started |
+| Stage 4 - Preset Helper | Complete |
+| Stages 5-10 | Not started |
 
 The source-layout section below is the Stage 0 baseline. The current post-Stage
 1 architecture is documented in [`ARCHITECTURE.md`](ARCHITECTURE.md).

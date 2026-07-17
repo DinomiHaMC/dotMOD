@@ -173,6 +173,43 @@ inside its bounded rectangle is consumed before `HandledScreen`, preventing
 vanilla outside-click item drops. It hides around recipe-book/status-effect
 conflicts and performs IO only on attach, refresh, or explicit user actions.
 
+## Preset Helper
+
+The helper core is independent of screens and handlers:
+
+```text
+VirtualInventorySnapshot -> PresetComparisonService -> PresetProgress
+Client recipe displays   -> RecipeAvailabilityService
+                         -> RecipeDependencyTreeBuilder
+```
+
+`ExactItemKey` removes count but preserves the item and all data components.
+`InventoryCounter` aggregates copied stacks, and comparison totals cap available
+amounts at each requirement so excess items cannot inflate overall progress.
+Missing virtual slot indices are passed to ISM through an optional read-only
+`InvSeeSupplement`; ISM remains unaware of presets and gains no mutation path.
+
+`ClientInventorySnapshot` reads all player inventory slots and, only while a
+matching handled screen is visible, non-player container slots. It excludes the
+real cursor, duplicate backing slots, creative catalog slots, and computed
+crafting results. The copied snapshot is frozen before ISM replaces the vanilla
+screen. A non-player handler remains active but inaccessible beneath the plain
+read-only screen, avoiding cursor/input return side effects. ISM restores its
+parent only while both connection and handler identity still match; otherwise it
+closes to a safe null screen instead of reviving a stale handled screen.
+
+Minecraft 1.21.11 does not provide every server recipe definition to a vanilla
+client. `ClientRecipeCatalog` therefore consumes only `RecipeDisplayEntry`
+objects present in the current recipe book. Ingredient occurrences are retained
+instead of deduplicated. A capacity-flow allocation handles overlapping
+alternatives; recipes without declarative requirements and component predicates
+that cannot be reconstructed from a display are marked unknown. Dependency
+expansion follows the recipe selected in the detail view, shares one allocated
+inventory budget across sibling branches, and uses a path-local cycle guard plus
+depth and node bounds.
+No helper class calls an interaction manager, slot click, recipe click, or craft
+packet API.
+
 ## Messages And Commands
 
 `MessageService` is the only formatter for dotMOD chat and overlay messages. It

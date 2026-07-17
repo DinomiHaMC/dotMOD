@@ -33,6 +33,10 @@ Current JUnit coverage:
 - preset CRUD, active state, stale revisions, duplicate snapshots, and trash;
 - orphan index recovery and future primary/backup write blocking;
 - bounded whitelist-based preset JSON import/export with ItemStack components.
+- exact preset comparison for player-only and player-plus-container counts;
+- empty, partial, excess, and component-mismatched requirement progress;
+- competing recipe alternatives, repeated ingredients, and unknown recipes;
+- two-item recipe cycle termination and dependency depth limits.
 
 Run the complete verification and build:
 
@@ -111,17 +115,6 @@ Run the complete verification and build:
 - Disconnect or change worlds while ISM is open; verify no packet, crash, or
   unintended save occurs.
 
-## Future Stage Checklists
-
-The following checks become active only after their implementation stage. They
-are retained here so features are not considered complete without in-game
-coverage.
-
-### Presets
-
-Preset CRUD is implemented in Stage 3; helper-specific checks remain below for
-Stage 4.
-
 ## Stage 3 Manual Checklist
 
 ### Commands And ISM Integration
@@ -150,9 +143,33 @@ Stage 4.
 - Resize with search/scroll state and name dialog text entered; verify state is
   retained and no duplicate widgets/callbacks appear.
 
+## Stage 4 Manual Checklist
+
 ### Preset Helper
 
-- Test inventory panel helper counts, recipes, and cycle protection.
+- Test `pst hlp`, `pst hlp <name>`, dynamic quoted-name suggestions, the preset
+  context action, no-active feedback, and the unbound/rebound helper key.
+- Compare a preset against player-only contents and against an open chest or
+  crafting container. Verify player slots are not doubled and the real cursor
+  and computed crafting output are excluded.
+- Verify orange ISM missing-slot borders, summary counts, Materials navigation,
+  Back/Close behavior, tooltips, search, scrolling, and all four filters at
+  small and large GUI scales.
+- Inspect recipes with output counts above one, repeated ingredients, tags,
+  competing alternatives, no known recipe, and non-declarative special recipes.
+- Inspect a cyclic recipe graph and verify cycle/depth/node terminal states
+  render without a hang or stack overflow.
+- Capture a container and verify helper values remain a frozen snapshot while
+  server updates arrive. Force the server to close it and verify Back does not
+  restore a stale handled screen.
+- Verify no item moves, crafting grid changes, inventory click, recipe click,
+  craft request, or custom packet occurs anywhere in helper UI.
+
+## Future Stage Checklists
+
+The following checks become active only after their implementation stage. They
+are retained here so features are not considered complete without in-game
+coverage.
 
 ### Inventory Search
 

@@ -19,6 +19,7 @@ public final class VirtualSlotWidget extends ClickableWidget {
     private final PressAction action;
     private ItemStack stack = ItemStack.EMPTY;
     private boolean selected;
+    private boolean warning;
 
     public VirtualSlotWidget(int referenceIndex, int x, int y, TextRenderer textRenderer, PressAction action) {
         super(x, y, SIZE, SIZE, Text.translatable("screen.dotmod.ism.slot.empty"));
@@ -46,6 +47,10 @@ public final class VirtualSlotWidget extends ClickableWidget {
         this.selected = selected;
     }
 
+    public void setWarning(boolean warning) {
+        this.warning = warning;
+    }
+
     @Override
     protected boolean isValidClickButton(MouseInput input) {
         return input.button() == InputUtil.GLFW_MOUSE_BUTTON_LEFT
@@ -68,12 +73,15 @@ public final class VirtualSlotWidget extends ClickableWidget {
 
     @Override
     protected void renderWidget(DrawContext context, int mouseX, int mouseY, float deltaTicks) {
-        int border = selected ? 0xFF55FFFF : isFocused() || isHovered() ? 0xFFFFFFFF : 0xFF777777;
+        int border = selected ? 0xFF55FFFF : warning ? 0xFFFFAA00 : isFocused() || isHovered() ? 0xFFFFFFFF : 0xFF777777;
         context.fill(getX(), getY(), getX() + SIZE, getY() + SIZE, border);
         context.fill(getX() + 1, getY() + 1, getX() + SIZE - 1, getY() + SIZE - 1, 0xDD202020);
         if (!stack.isEmpty()) {
             context.drawItem(stack, getX() + 1, getY() + 1);
             context.drawStackOverlay(textRenderer, stack, getX() + 1, getY() + 1);
+        }
+        if (warning) {
+            context.drawStrokedRectangle(getX() + 2, getY() + 2, SIZE - 4, SIZE - 4, 0xFFFFAA00);
         }
     }
 
