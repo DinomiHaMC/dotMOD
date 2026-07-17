@@ -1,5 +1,6 @@
 package com.dinomiha.dotmod.hud;
 
+import com.dinomiha.dotmod.config.ConfigService;
 import com.dinomiha.dotmod.config.DotModConfig;
 
 public final class HudLayout {
@@ -8,16 +9,16 @@ public final class HudLayout {
 
     public static Rect rect(HudElement element, int width, int height) {
         Rect base = baseRect(element, width, height);
-        DotModConfig.HudOffset offset = DotModConfig.get().hudOffset(element);
+        DotModConfig.HudOffset offset = ConfigService.get().config().hud.offset(element);
         return new Rect(base.x + offset.dx, base.y + offset.dy, base.width, base.height);
     }
 
     public static DotModConfig.HudOffset activeOffset(HudElement element) {
-        DotModConfig config = DotModConfig.get();
-        if (!config.modEnabled || !config.hudEditorEnabled) {
+        DotModConfig config = ConfigService.get().config();
+        if (!config.general.enabled || !config.hud.editorEnabled) {
             return new DotModConfig.HudOffset();
         }
-        return config.hudOffset(element);
+        return config.hud.offset(element);
     }
 
     private static Rect baseRect(HudElement element, int width, int height) {

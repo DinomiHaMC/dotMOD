@@ -1,6 +1,10 @@
 package com.dinomiha.dotmod.util;
 
+import com.dinomiha.dotmod.config.ConfigService;
 import com.dinomiha.dotmod.config.DotModConfig;
+import com.dinomiha.dotmod.config.PlayerColorService;
+import com.dinomiha.dotmod.message.MessageService;
+import com.dinomiha.dotmod.message.MessageType;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.PlayerEntity;
@@ -22,36 +26,44 @@ public final class NameColorManager {
     public static void colorTargetedPlayer(String hexColor) {
         Optional<PlayerEntity> target = targetedPlayer();
         if (target.isEmpty()) {
-            notify(Text.literal("dotMOD: no targeted player"));
+            notify(Text.translatable("message.dotmod.player_colors.no_target"), MessageType.WARNING);
             return;
         }
         PlayerEntity player = target.get();
         String color = ColorUtil.normalizeHex(hexColor, "#FFFFFF");
-        DotModConfig.get().setNameColor(player.getUuid(), color);
-        notify(Text.literal("dotMOD: colored ").append(player.getName()).append(Text.literal(" " + color)));
+        boolean saved = PlayerColorService.get().set(player.getUuid(), color);
+        notify(
+                saved
+                        ? Text.translatable("message.dotmod.player_colors.set", player.getName(), color)
+                        : Text.translatable("message.dotmod.player_colors.save_failed", player.getName()),
+                saved ? MessageType.SUCCESS : MessageType.ERROR
+        );
     }
 
     public static void resetTargetedPlayer() {
         Optional<PlayerEntity> target = targetedPlayer();
         if (target.isEmpty()) {
-            notify(Text.literal("dotMOD: no targeted player"));
+            notify(Text.translatable("message.dotmod.player_colors.no_target"), MessageType.WARNING);
             return;
         }
         PlayerEntity player = target.get();
-        DotModConfig.get().clearNameColor(player.getUuid());
-        notify(Text.literal("dotMOD: reset color for ").append(player.getName()));
+        boolean saved = PlayerColorService.get().clear(player.getUuid());
+        notify(
+                Text.translatable(saved ? "message.dotmod.player_colors.reset" : "message.dotmod.player_colors.save_failed", player.getName()),
+                saved ? MessageType.SUCCESS : MessageType.ERROR
+        );
     }
 
     public static Optional<Integer> colorFor(UUID uuid) {
-        DotModConfig config = DotModConfig.get();
-        if (!config.modEnabled || !config.nameColorsEnabled || uuid == null) {
+        DotModConfig config = ConfigService.get().config();
+        if (!config.general.enabled || !config.playerColors.enabled || uuid == null) {
             return Optional.empty();
         }
-        String color = config.playerNameColors.get(uuid);
+        String color = PlayerColorService.get().color(uuid).orElse(null);
         if (color == null) {
             return Optional.empty();
         }
-        return Optional.of(ColorUtil.parseRgb(color, ColorUtil.parseRgb(config.defaultColor, 0xFFFFFF)));
+        return Optional.of(ColorUtil.parseRgb(color, ColorUtil.parseRgb(config.playerColors.defaultColor, 0xFFFFFF)));
     }
 
     public static Text coloredCopy(Text text, UUID uuid) {
@@ -85,11 +97,10 @@ public final class NameColorManager {
                 .map(player -> player);
     }
 
-    private static void notify(Text text) {
-        DotModConfig config = DotModConfig.get();
-        MinecraftClient client = MinecraftClient.getInstance();
-        if (config.notifyNameColorChanges && client.player != null) {
-            client.player.sendMessage(text, false);
+    private static void notify(Text text, MessageType type) {
+        DotModConfig config = ConfigService.get().config();
+        if (config.playerColors.notifyChanges) {
+            MessageService.sendChat(text, type);
         }
     }
 }

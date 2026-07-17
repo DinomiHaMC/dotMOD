@@ -1,13 +1,20 @@
 package com.dinomiha.dotmod.gui;
 
+import com.dinomiha.dotmod.config.ConfigService;
 import com.dinomiha.dotmod.config.DotModConfig;
 import com.dinomiha.dotmod.hud.HudElement;
 import com.dinomiha.dotmod.hud.HudLayout;
+import com.dinomiha.dotmod.message.MessageService;
+import com.dinomiha.dotmod.message.MessageType;
+import com.dinomiha.dotmod.ui.component.DotButton;
+import com.dinomiha.dotmod.ui.component.DotConfirmationDialog;
 import net.minecraft.client.gui.Click;
 import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.Screen;
-import net.minecraft.client.gui.widget.ButtonWidget;
+import net.minecraft.text.OrderedText;
 import net.minecraft.text.Text;
+
+import java.util.List;
 
 public final class HudEditorScreen extends Screen {
     private static final int GUIDE_COLOR = 0xDD55FFFF;
@@ -29,23 +36,35 @@ public final class HudEditorScreen extends Screen {
     private Guide horizontalGuide;
 
     public HudEditorScreen(Screen parent) {
-        super(Text.literal("dotMOD HUD Editor"));
+        super(Text.translatable("screen.dotmod.hud_editor.title"));
         this.parent = parent;
     }
 
     @Override
     protected void init() {
-        addDrawableChild(ButtonWidget.builder(Text.literal("Reset"), button -> DotModConfig.resetHud())
-                .dimensions(8, 8, 80, 20)
-                .build());
-        addDrawableChild(ButtonWidget.builder(Text.literal("Done"), button -> close())
-                .dimensions(8, 32, 80, 20)
-                .build());
+        addDrawableChild(DotButton.create(8, 8, 80, Text.translatable("screen.dotmod.hud_editor.reset"), button -> {
+            if (client != null) {
+                DotConfirmationDialog.open(
+                        client,
+                        this,
+                        Text.translatable("screen.dotmod.hud_editor.reset.title"),
+                        Text.translatable("screen.dotmod.hud_editor.reset.message"),
+                        () -> {
+                            if (!ConfigService.get().resetHud()) {
+                                MessageService.sendChat(Text.translatable("message.dotmod.config.save_failed"), MessageType.ERROR);
+                            }
+                        }
+                );
+            }
+        }));
+        addDrawableChild(DotButton.create(8, 32, 80, Text.translatable("gui.done"), button -> close()));
     }
 
     @Override
     public void close() {
-        DotModConfig.save();
+        if (!ConfigService.get().save()) {
+            MessageService.sendChat(Text.translatable("message.dotmod.config.save_failed"), MessageType.ERROR);
+        }
         if (client != null) {
             client.setScreen(parent);
         }
@@ -72,15 +91,24 @@ public final class HudEditorScreen extends Screen {
             boolean hovered = mouseX >= rect.x() && mouseX <= rect.x() + rect.width() && mouseY >= rect.y() && mouseY <= rect.y() + rect.height();
             int color = hovered || element == dragging ? 0xAA55FF55 : 0xAAFFFFFF;
             context.drawStrokedRectangle(rect.x(), rect.y(), rect.width(), rect.height(), color);
-            context.drawTextWithShadow(textRenderer, element.displayName(), rect.x() + 3, rect.y() + 3, 0xFFFFFF);
+            context.drawTextWithShadow(textRenderer, Text.translatable(element.translationKey()), rect.x() + 3, rect.y() + 3, 0xFFFFFF);
         }
         context.drawCenteredTextWithShadow(textRenderer, title, width / 2, 10, 0xFFFFFF);
-        context.drawCenteredTextWithShadow(textRenderer, Text.literal("Drag elements. Positions are saved as dx/dy offsets."), width / 2, 24, 0xA0A0A0);
+        List<OrderedText> helpLines = textRenderer.wrapLines(
+                Text.translatable("screen.dotmod.hud_editor.help"),
+                Math.max(80, width - 192)
+        );
+        for (int line = 0; line < helpLines.size(); line++) {
+            context.drawCenteredTextWithShadow(textRenderer, helpLines.get(line), width / 2, 24 + line * 10, 0xA0A0A0);
+        }
         super.render(context, mouseX, mouseY, deltaTicks);
     }
 
     @Override
     public boolean mouseClicked(Click click, boolean doubled) {
+        if (super.mouseClicked(click, doubled)) {
+            return true;
+        }
         double mouseX = click.x();
         double mouseY = click.y();
         if (click.button() == 0) {
@@ -91,7 +119,7 @@ public final class HudEditorScreen extends Screen {
                 HudElement element = elements[index];
                 HudLayout.Rect rect = HudLayout.rect(element, width, height);
                 if (mouseX >= rect.x() && mouseX <= rect.x() + rect.width() && mouseY >= rect.y() && mouseY <= rect.y() + rect.height()) {
-                    DotModConfig.HudOffset offset = DotModConfig.get().hudOffset(element);
+                    DotModConfig.HudOffset offset = ConfigService.get().config().hud.offset(element);
                     dragging = element;
                     dragStartMouseX = (int) mouseX;
                     dragStartMouseY = (int) mouseY;
@@ -101,7 +129,7 @@ public final class HudEditorScreen extends Screen {
                 }
             }
         }
-        return super.mouseClicked(click, doubled);
+        return false;
     }
 
     @Override
@@ -109,29 +137,29 @@ public final class HudEditorScreen extends Screen {
         double mouseX = click.x();
         double mouseY = click.y();
         if (dragging != null && click.button() == 0) {
-            DotModConfig config = DotModConfig.get();
-            DotModConfig.HudOffset offset = config.hudOffset(dragging);
+            DotModConfig config = ConfigService.get().config();
+            DotModConfig.HudOffset offset = config.hud.offset(dragging);
             int dx = dragStartDx + (int) mouseX - dragStartMouseX;
             int dy = dragStartDy + (int) mouseY - dragStartMouseY;
-            if (config.hudSnapToGrid) {
-                int grid = Math.max(1, config.hudGridSize);
+            if (config.hud.snapToGrid) {
+                int grid = Math.max(1, config.hud.gridSize);
                 dx = Math.round(dx / (float) grid) * grid;
                 dy = Math.round(dy / (float) grid) * grid;
             }
             verticalGuide = null;
             horizontalGuide = null;
-            if (config.hudMagneticSnapping) {
+            if (config.hud.magneticSnapping) {
                 HudLayout.Rect currentRect = HudLayout.rect(dragging, width, height);
                 int baseX = currentRect.x() - offset.dx;
                 int baseY = currentRect.y() - offset.dy;
                 HudLayout.Rect proposedRect = new HudLayout.Rect(baseX + dx, baseY + dy, currentRect.width(), currentRect.height());
 
-                AxisSnap xSnap = snapX(proposedRect, dx, config.hudMagneticSnapDistance);
+                AxisSnap xSnap = snapX(proposedRect, dx, config.hud.magneticSnapDistance);
                 dx = xSnap.offset();
                 verticalGuide = xSnap.guide();
                 proposedRect = new HudLayout.Rect(baseX + dx, proposedRect.y(), proposedRect.width(), proposedRect.height());
 
-                AxisSnap ySnap = snapY(proposedRect, dy, config.hudMagneticSnapDistance);
+                AxisSnap ySnap = snapY(proposedRect, dy, config.hud.magneticSnapDistance);
                 dy = ySnap.offset();
                 horizontalGuide = ySnap.guide();
             }
@@ -148,18 +176,20 @@ public final class HudEditorScreen extends Screen {
             dragging = null;
             verticalGuide = null;
             horizontalGuide = null;
-            DotModConfig.save();
+            if (!ConfigService.get().save()) {
+                MessageService.sendChat(Text.translatable("message.dotmod.config.save_failed"), MessageType.ERROR);
+            }
             return true;
         }
         return super.mouseReleased(click);
     }
 
     private void renderGrid(DrawContext context) {
-        DotModConfig config = DotModConfig.get();
-        if (!config.hudSnapToGrid) {
+        DotModConfig config = ConfigService.get().config();
+        if (!config.hud.snapToGrid) {
             return;
         }
-        int grid = Math.max(2, config.hudGridSize * 8);
+        int grid = Math.max(2, config.hud.gridSize * 8);
         for (int x = 0; x < width; x += grid) {
             context.fill(x, 0, x + 1, height, 0x22000000);
         }

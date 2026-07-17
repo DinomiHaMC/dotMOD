@@ -15,6 +15,7 @@ loom {
 
     mods {
         dotmod {
+            sourceSet sourceSets.main
             sourceSet sourceSets.client
         }
     }
@@ -47,23 +48,37 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
     modImplementation "com.terraformersmc:modmenu:${project.modmenu_version}"
     modImplementation "me.shedaniel.cloth:cloth-config-fabric:${project.cloth_config_version}"
+    implementation "com.google.code.gson:gson:${project.gson_version}"
+
+    testImplementation platform("org.junit:junit-bom:${project.junit_version}")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
 }
 
+def resourceProperties = [
+        version             : version.toString(),
+        minecraft_version   : minecraft_version,
+        loader_version      : loader_version,
+        fabric_api_version  : fabric_api_version,
+        modmenu_version     : modmenu_version,
+        cloth_config_version: cloth_config_version
+]
+
 processResources {
-    inputs.property "version", project.version
+    inputs.properties(resourceProperties)
 
     filesMatching("fabric.mod.json") {
-        expand "version": inputs.properties.version,
-                "minecraft_version": project.minecraft_version,
-                "loader_version": project.loader_version,
-                "fabric_api_version": project.fabric_api_version,
-                "modmenu_version": project.modmenu_version,
-                "cloth_config_version": project.cloth_config_version
+        expand resourceProperties
     }
 }
 
 tasks.withType(JavaCompile).configureEach {
     it.options.release = 21
+}
+
+tasks.withType(Test).configureEach {
+    useJUnitPlatform()
+    workingDir temporaryDir
 }
 
 java {
@@ -72,8 +87,10 @@ java {
     targetCompatibility = JavaVersion.VERSION_21
 }
 
+def licenseArchiveName = base.archivesName.get()
+
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.base.archivesName.get()}" }
+        rename { "${it}_${licenseArchiveName}" }
     }
 }

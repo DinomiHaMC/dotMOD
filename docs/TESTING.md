@@ -1,0 +1,129 @@
+# dotMOD Testing
+
+## Automated Tests
+
+Run tests without starting Minecraft:
+
+```bash
+./gradlew test
+```
+
+Current JUnit coverage:
+
+- missing config category and field restoration;
+- invalid config value validation and clamping;
+- flat legacy config to schema-v2 migration;
+- failed legacy migration retry without a false commit marker;
+- UUID player-color extraction during migration;
+- malformed UUID isolation and future-schema rejection;
+- separated storage paths;
+- migration backup copying;
+- JSON creation and atomic replacement;
+- previous-file `.bak` preservation;
+- malformed JSON `.broken` preservation, backup recovery, and safe defaults.
+
+Run the complete verification and build:
+
+```bash
+./gradlew clean build
+```
+
+## Stage 1 Manual Checklist
+
+### Configuration And Migration
+
+- Start once without config files; verify `config.json` and
+  `player-colors.json` are created under `config/dotmod/`.
+- Start with a valid legacy `config/dotmod.json`; verify all existing settings
+  and UUID colors migrate and `dotmod.json.migrated.bak` exists.
+- Corrupt each JSON file independently; verify startup continues, `.broken` is
+  preserved, defaults are restored, and an error is logged.
+- Change values in Mod Menu, restart, and verify they persist.
+- Add an unknown JSON field, reload, and verify known settings remain valid.
+
+### Commands And Messages
+
+- Join singleplayer and a normal server without dotMOD installed.
+- Verify `/dot` and `/dotmod` expose identical autocomplete trees.
+- Execute `help`, `config`, `hud`, `reload`, and every `prefix` variant.
+- Verify `/dot prefix custom "My Mod:"` handles quotes and persists.
+- Verify clickable help actions and hover text.
+- Switch between English and Russian and verify command/config/HUD text.
+- Verify no dotMOD custom payload is sent and server chat is not used for local
+  command feedback.
+
+### Current GUI, HUD, And Keybinds
+
+- Test survival inventory, crafting table, and creative inventory at GUI scales
+  1 through Auto in windowed and fullscreen modes.
+- Verify Quick Craft and HUD buttons remain attached when the recipe book moves
+  the container.
+- Open HUD Editor, drag every element, test grid and magnetic snapping, confirm
+  reset, close, restart, and verify offsets persist.
+- Rebind each key in Controls and verify the config screen shows the real bound
+  key rather than the default.
+- Verify player colors remain UUID-based across reconnects and can be disabled
+  from persistence.
+- Verify Toggle Shift and uniform-name-tag state messages use the selected
+  dotMOD prefix.
+
+## Future Stage Checklists
+
+The following checks become active only after their implementation stage. They
+are retained here so features are not considered complete without in-game
+coverage.
+
+### ISM And Presets
+
+- Verify view mode rejects every mutation path.
+- Verify edit cancel restores the original local model and save round-trips all
+  slots and item components.
+- Verify creative mode copies into local state without changing the player
+  inventory, cursor stack, or server inventory.
+- Test preset CRUD, duplicate names, quoted names, import/export, inventory
+  panel layout, helper counts, recipes, and cycle protection.
+
+### Inventory Search
+
+- Test player inventory and every available handled container.
+- Test all operators, combined `&` filters, localized names, invalid syntax,
+  tooltip explanation, dim/hide modes, and empty queries.
+
+### Command Features
+
+- Test Fast Command List with keyboard and mouse, history limits, pinned items,
+  sensitive exclusions, dangerous-command confirmation, and argument prompts.
+- Test aliases with quotes, additional arguments, placeholders, duplicate and
+  real-command conflicts, direct and indirect cycles, and disabled aliases.
+- Test recolor against tab-list players, unknown players, reset/list, picker,
+  UUID identity, and invalid HEX values.
+
+### Durability And HUD Widgets
+
+- Test every armor/durability mode, orientation, scale, opacity, snapping,
+  context menu, warning threshold, interpolation endpoints, and alert cooldown.
+- Test Colored Online sorting/filtering and confirm only tab-list data appears.
+
+### Death And Screenshot+
+
+- Die in each dimension and after changing servers/worlds; verify coordinates,
+  cause, effects, inventory, armor, offhand, screenshot, and interactive links.
+- Force screenshot failure and verify the remaining death record survives.
+- Test history list/show/delete/clear confirmation and missing files.
+- Test image/path copy, open, show, and built-in viewing on Linux, Windows, and
+  macOS when those platforms are available.
+
+### Toggle Walk And Freelook
+
+- Test rebound movement/sprint keys, Hold/Toggle accessibility modes, chat,
+  menus, death, disconnect, emergency stop, and HUD indicators.
+- Test Freelook hold/toggle, first/third person, pitch bounds, inversions,
+  sensitivity, smooth return, movement direction, server-visible rotation, and
+  compatibility with the current camera/render mixins.
+
+### Server Compatibility
+
+- Repeat relevant checks in singleplayer, a plain Fabric server without dotMOD,
+  Paper/Spigot, and Realms where access is available.
+- Record the exact client/server/mod versions and never claim an untested
+  platform result.

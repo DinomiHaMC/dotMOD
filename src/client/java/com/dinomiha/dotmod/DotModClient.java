@@ -1,6 +1,8 @@
 package com.dinomiha.dotmod;
 
-import com.dinomiha.dotmod.config.DotModConfig;
+import com.dinomiha.dotmod.command.DotClientCommands;
+import com.dinomiha.dotmod.config.ConfigService;
+import com.dinomiha.dotmod.config.PlayerColorService;
 import com.dinomiha.dotmod.gui.InventoryButtons;
 import com.dinomiha.dotmod.keybind.DotModKeybinds;
 import com.dinomiha.dotmod.mixin.HandledScreenAccessor;
@@ -15,7 +17,9 @@ public final class DotModClient implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
-        DotModConfig.load();
+        ConfigService.initialize();
+        PlayerColorService.initialize();
+        DotClientCommands.register();
         DotModKeybinds.register();
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof HandledScreen<?> handledScreen) {

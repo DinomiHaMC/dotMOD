@@ -1,5 +1,6 @@
 package com.dinomiha.dotmod.util;
 
+import com.dinomiha.dotmod.config.ConfigService;
 import com.dinomiha.dotmod.config.DotModConfig;
 import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.state.CameraRenderState;
@@ -25,14 +26,14 @@ public final class UniformNameTagRenderer {
             double squaredDistanceToCamera,
             CameraRenderState cameraState
     ) {
-        DotModConfig config = DotModConfig.get();
-        if (!config.modEnabled || !config.uniformNameTagsEnabled || !config.uniformNameTagsActive) {
+        DotModConfig config = ConfigService.get().config();
+        if (!config.general.enabled || !config.hud.uniformNameTags.enabled || !config.hud.uniformNameTags.active) {
             queue.submitLabel(matrices, position, yOffset, text, discrete, light, squaredDistanceToCamera, cameraState);
             return;
         }
 
         float distanceScale = (float) (Math.sqrt(Math.max(0.01, squaredDistanceToCamera)) / REFERENCE_DISTANCE);
-        SCALE.set(distanceScale * config.uniformNameTagSize);
+        SCALE.set(distanceScale * config.hud.uniformNameTags.size);
         try {
             queue.submitLabel(matrices, position, yOffset, text, discrete, light, squaredDistanceToCamera, cameraState);
         } finally {
@@ -49,6 +50,6 @@ public final class UniformNameTagRenderer {
         if (SCALE.get() == null || vanillaColor == 0) {
             return vanillaColor;
         }
-        return 0xFF000000 | ColorUtil.parseRgb(DotModConfig.get().uniformNameTagBackgroundColor, 0);
+        return 0xFF000000 | ColorUtil.parseRgb(ConfigService.get().config().hud.uniformNameTags.backgroundColor, 0);
     }
 }

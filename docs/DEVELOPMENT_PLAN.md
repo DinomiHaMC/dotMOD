@@ -4,6 +4,17 @@ This document records the Stage 0 audit and the implementation boundaries for
 Stages 1-10. It describes the current working tree, including changes that were
 not committed when the audit started.
 
+## Implementation Status
+
+| Stage | Status |
+| --- | --- |
+| Stage 0 - Audit | Complete |
+| Stage 1 - Foundation | Complete |
+| Stages 2-10 | Not started |
+
+The source-layout section below is the Stage 0 baseline. The current post-Stage
+1 architecture is documented in [`ARCHITECTURE.md`](ARCHITECTURE.md).
+
 ## Current Baseline
 
 ### Toolchain

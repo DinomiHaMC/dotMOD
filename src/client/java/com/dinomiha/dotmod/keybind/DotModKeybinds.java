@@ -1,6 +1,9 @@
 package com.dinomiha.dotmod.keybind;
 
+import com.dinomiha.dotmod.config.ConfigService;
 import com.dinomiha.dotmod.config.DotModConfig;
+import com.dinomiha.dotmod.message.MessageService;
+import com.dinomiha.dotmod.message.MessageType;
 import com.dinomiha.dotmod.util.NameColorManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
@@ -45,45 +48,64 @@ public final class DotModKeybinds {
         return KeyBindingHelper.registerKeyBinding(new KeyBinding(translationKey, InputUtil.Type.KEYSYM, key, CATEGORY));
     }
 
+    public static Text description(String translationKey) {
+        KeyBinding binding = KeyBinding.byId(translationKey);
+        Text boundKey = binding == null ? Text.translatable("key.keyboard.unknown") : binding.getBoundKeyLocalizedText();
+        return Text.translatable("config.dotmod.keybinds.entry", Text.translatable(translationKey), boundKey);
+    }
+
     private static void tick(MinecraftClient client) {
-        DotModConfig config = DotModConfig.get();
-        if (!config.modEnabled) {
+        DotModConfig config = ConfigService.get().config();
+        if (!config.general.enabled) {
             updateSneakState(client);
             return;
         }
         while (greenName.wasPressed()) {
-            if (config.nameColorsEnabled) {
-                NameColorManager.colorTargetedPlayer(config.greenColor);
+            if (config.playerColors.enabled) {
+                NameColorManager.colorTargetedPlayer(config.playerColors.greenColor);
             }
         }
         while (redName.wasPressed()) {
-            if (config.nameColorsEnabled) {
-                NameColorManager.colorTargetedPlayer(config.redColor);
+            if (config.playerColors.enabled) {
+                NameColorManager.colorTargetedPlayer(config.playerColors.redColor);
             }
         }
         while (resetName.wasPressed()) {
-            if (config.nameColorsEnabled) {
+            if (config.playerColors.enabled) {
                 NameColorManager.resetTargetedPlayer();
             }
         }
         while (uniformNameTags.wasPressed()) {
-            if (config.uniformNameTagsEnabled) {
-                config.uniformNameTagsActive = !config.uniformNameTagsActive;
-                DotModConfig.save();
-                if (client.player != null) {
-                    client.player.sendMessage(Text.translatable(
-                            "message.dotmod.uniform_name_tags",
-                            Text.translatable(config.uniformNameTagsActive ? "options.on" : "options.off")
-                    ), true);
+            if (config.hud.uniformNameTags.enabled) {
+                config.hud.uniformNameTags.active = !config.hud.uniformNameTags.active;
+                boolean saved = ConfigService.get().save();
+                if (config.keybinds.showToggleMessages) {
+                    MessageService.sendOverlay(
+                            saved
+                                    ? Text.translatable(
+                                            "message.dotmod.uniform_name_tags",
+                                            Text.translatable(config.hud.uniformNameTags.active ? "options.on" : "options.off")
+                                    )
+                                    : Text.translatable("message.dotmod.config.save_failed"),
+                            saved ? MessageType.INFO : MessageType.ERROR
+                    );
                 }
             }
         }
         while (toggleShift.wasPressed()) {
-            if (config.toggleShiftEnabled) {
-                config.toggleShiftActive = !config.toggleShiftActive;
-                DotModConfig.save();
-                if (client.player != null) {
-                    client.player.sendMessage(Text.literal("Toggle Shift: " + (config.toggleShiftActive ? "ON" : "OFF")), true);
+            if (config.toggleWalk.toggleShift.enabled) {
+                config.toggleWalk.toggleShift.active = !config.toggleWalk.toggleShift.active;
+                boolean saved = ConfigService.get().save();
+                if (config.keybinds.showToggleMessages) {
+                    MessageService.sendOverlay(
+                            saved
+                                    ? Text.translatable(
+                                            "message.dotmod.toggle_shift",
+                                            Text.translatable(config.toggleWalk.toggleShift.active ? "options.on" : "options.off")
+                                    )
+                                    : Text.translatable("message.dotmod.config.save_failed"),
+                            saved ? MessageType.INFO : MessageType.ERROR
+                    );
                 }
             }
         }
@@ -91,8 +113,10 @@ public final class DotModKeybinds {
     }
 
     private static void updateSneakState(MinecraftClient client) {
-        DotModConfig config = DotModConfig.get();
-        boolean shouldForce = config.modEnabled && config.toggleShiftEnabled && config.toggleShiftActive;
+        DotModConfig config = ConfigService.get().config();
+        boolean shouldForce = config.general.enabled
+                && config.toggleWalk.toggleShift.enabled
+                && config.toggleWalk.toggleShift.active;
         if (shouldForce) {
             setSneakPressed(client.options.sneakKey, true);
             forcingSneak = true;

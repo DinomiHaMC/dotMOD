@@ -117,9 +117,11 @@ toggle is pressed again.
 
 ### Configuration
 
-The configuration screen is available through Mod Menu. Current categories are:
+The configuration screen is available through Mod Menu or `/dot config`.
+Current categories are:
 
 - General;
+- Commands;
 - Quick Craft;
 - HUD Editor;
 - Name Colors;
@@ -130,15 +132,42 @@ The configuration screen is available through Mod Menu. Current categories are:
 Settings are stored in:
 
 ```text
-config/dotmod.json
+config/dotmod/config.json
+config/dotmod/player-colors.json
 ```
 
-Writes use a temporary file and atomic replacement where supported. If the JSON
-cannot be read, dotMOD preserves it as `config/dotmod.json.broken`, restores safe
-defaults, and continues startup.
+Each subsystem has its own path under `config/dotmod/`. Writes use a temporary
+file, preserve the previous version as `.bak`, and use atomic replacement where
+supported. If JSON cannot be read, dotMOD preserves it as `.broken`, restores a
+valid `.bak` when available, otherwise restores safe defaults, and continues
+startup.
+
+The previous flat `config/dotmod.json` format is migrated automatically. The
+original is retained as `config/dotmod.json.migrated.bak` before the new files
+are written. `/dot reload` reloads configuration and player colors without
+restarting Minecraft.
 
 Minecraft stores key rebindings in its normal `options.txt`. Every dotMOD key
 can be changed under Minecraft's Controls screen.
+
+### Client Commands
+
+`/dot` and `/dotmod` are complete synonyms. They are Fabric client commands and
+do not send custom packets or require dotMOD on the server.
+
+| Command | Action |
+| --- | --- |
+| `/dot` or `/dot help` | Show localized clickable help |
+| `/dot config` | Open configuration |
+| `/dot hud` | Open the HUD editor |
+| `/dot reload` | Reload configuration and player colors |
+| `/dot prefix dotmod` | Use `dotMod:` |
+| `/dot prefix brackets` | Use `[dotMod]` |
+| `/dot prefix dot` | Use `.` |
+| `/dot prefix custom "text"` | Use a quoted custom prefix |
+
+Messages are routed through one service and support informational, warning,
+error, success, click, and hover content. English and Russian are included.
 
 ## Requirements
 
@@ -173,9 +202,9 @@ Fabric server, Paper/Spigot server, or Realm.
 - HUD editor rectangles approximate dynamic vanilla elements such as multi-row
   hearts, multiple boss bars, and variable-size scoreboards.
 - Player colors depend on client-known entities and tab-list data.
-- Most configuration UI text is currently English; keybind names and selected
-  messages include English and Russian translations.
-- There are currently no `/dot` or `/dotmod` in-game commands.
+- A server command named `/dot` or `/dotmod` may conflict with the client root.
+  Fabric's public client-command API does not expose the unmerged server command
+  tree, so dotMOD cannot reliably detect this server-side name collision.
 - Quick Craft sends only normal inventory interactions, so server latency or
   server-side inventory restrictions can affect the result.
 
@@ -185,6 +214,7 @@ Clone the repository and use the included Gradle wrapper with Java 21.
 
 ```bash
 ./gradlew runClient
+./gradlew test
 ./gradlew clean build
 ```
 
@@ -194,11 +224,18 @@ Built artifacts are written to:
 build/libs/
 ```
 
-The current architecture and staged development plan are documented in
-[`docs/DEVELOPMENT_PLAN.md`](docs/DEVELOPMENT_PLAN.md).
+Project documentation:
 
-Automated tests are not yet present; `./gradlew test` currently reports
-`NO-SOURCE`.
+- [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md) describes the current modules,
+  startup order, storage guarantees, and client/server boundary.
+- [`docs/DEVELOPMENT_PLAN.md`](docs/DEVELOPMENT_PLAN.md) records the audit and
+  staged implementation plan.
+- [`docs/TESTING.md`](docs/TESTING.md) contains automated coverage and the manual
+  in-game checklist.
+
+JUnit currently covers config validation, future-schema protection, legacy
+migration and retry, malformed UUID isolation, safe JSON/backup recovery,
+atomic storage, localization parity, and data path separation.
 
 ## License
 

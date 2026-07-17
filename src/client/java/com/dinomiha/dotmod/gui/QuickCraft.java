@@ -1,6 +1,8 @@
 package com.dinomiha.dotmod.gui;
 
+import com.dinomiha.dotmod.config.ConfigService;
 import com.dinomiha.dotmod.config.DotModConfig;
+import com.dinomiha.dotmod.config.QuickCraftConfig;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.screen.CraftingScreenHandler;
@@ -17,8 +19,9 @@ public final class QuickCraft {
 
     public static void perform(ScreenHandler handler) {
         MinecraftClient client = MinecraftClient.getInstance();
-        DotModConfig config = DotModConfig.get();
-        if (client.player == null || client.interactionManager == null || !config.modEnabled || !config.quickCraftEnabled) {
+        DotModConfig config = ConfigService.get().config();
+        QuickCraftConfig quickCraft = config.quickCraft;
+        if (client.player == null || client.interactionManager == null || !config.general.enabled || !quickCraft.enabled) {
             return;
         }
         if (client.player.currentScreenHandler != handler || !handler.getCursorStack().isEmpty()) {
@@ -30,7 +33,7 @@ public final class QuickCraft {
             return;
         }
 
-        List<Integer> sources = playerInventory ? config.quickCraftSlots2x2 : config.quickCraftSlots3x3;
+        List<Integer> sources = playerInventory ? quickCraft.slots2x2 : quickCraft.slots3x3;
         int[] targetIds = playerInventory ? new int[]{1, 2, 3, 4} : new int[]{1, 2, 3, 4, 5, 6, 7, 8, 9};
         int count = Math.min(sources.size(), targetIds.length);
         for (int i = 0; i < count; i++) {
