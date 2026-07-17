@@ -138,5 +138,5 @@ the server's usual rules.
 
 - Source code: <https://github.com/DinomiHaMC/dotMOD>
 - Modrinth: <https://modrinth.com/mod/dotmod>
-- License: MIT
+- License: GNU GPL v3.0
 - Author: **DinoMiHa**

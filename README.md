@@ -7,7 +7,7 @@ a server-side installation.
 
 - Current version: **2.0.0**
 - Author: **DinoMiHa**
-- License: **MIT**
+- License: **GNU GPL v3.0**
 - Modrinth: <https://modrinth.com/mod/dotmod>
 
 ## Features
@@ -202,6 +202,6 @@ Automated tests are not yet present; `./gradlew test` currently reports
 
 ## License
 
-dotMOD is available under the [MIT License](LICENSE).
+dotMOD is available under the [GNU General Public License v3.0](LICENSE).
 
 Copyright (c) 2026 DinoMiHa.
