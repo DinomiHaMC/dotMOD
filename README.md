@@ -194,6 +194,31 @@ crafts possible from the snapshot, immediate ingredient deficits, and a bounded
 cycle-safe dependency tree. The helper is informational: it never fills a grid,
 moves an item, requests a recipe craft, or changes the real inventory.
 
+### Inventory Search
+
+Every handled inventory can show a compact dotMOD search field. A valid query
+visually dims or covers nonmatching stacks while leaving every slot, tooltip,
+click, drag, and server-synchronized stack unchanged. Invalid syntax is
+fail-open: filtering stops and the field tooltip reports the error position.
+
+Supported fields are `text`, `id`, `lore`, `enchantment`, `durability`, `count`,
+and `all-text`. Bare text is shorthand for `all-text:`. String fields support
+`:`, `=`, and `!=`; numeric fields additionally support `<`, `<=`, `>`, and
+`>=`. Combine up to 16 filters with `&`:
+
+```text
+diamond sword
+id=minecraft:diamond_sword
+enchantment:sharpness & durability<=25%
+lore:"Quest item" & count>=2
+```
+
+Durability is remaining percent and never matches non-damageable items. Search
+uses localized names, explicit lore, normal and stored enchantments, item IDs,
+and bounded basic tooltip text. The `?` button exposes the syntax as a nonmodal
+tooltip. Search is hidden while a narrow recipe book owns the screen because
+vanilla does not render container slots in that state.
+
 ### Configuration
 
 The configuration screen is available through Mod Menu or `/dot config`.
@@ -203,6 +228,7 @@ Current categories are:
 - Commands;
 - Quick Craft;
 - Inventory Presets;
+- Inventory Search;
 - HUD Editor;
 - Name Colors;
 - Uniform Name Tags;

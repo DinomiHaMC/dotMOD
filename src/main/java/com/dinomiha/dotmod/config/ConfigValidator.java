@@ -26,7 +26,10 @@ public final class ConfigValidator {
         config.hud = config.hud == null ? new HudConfig() : config.hud;
         config.quickCraft = config.quickCraft == null ? new QuickCraftConfig() : config.quickCraft;
         config.inventoryPresets = config.inventoryPresets == null ? new InventoryPresetsConfig() : config.inventoryPresets;
-        config.inventorySearch = feature(config.inventorySearch);
+        config.inventorySearch = config.inventorySearch == null ? new InventorySearchConfig() : config.inventorySearch;
+        if (config.inventorySearch.enabled == null) {
+            config.inventorySearch.enabled = loadedSchema >= 5;
+        }
         config.durability = config.durability == null ? new DurabilityConfig() : config.durability;
         config.screenshots = feature(config.screenshots);
         config.deathHistory = feature(config.deathHistory);
@@ -39,6 +42,9 @@ public final class ConfigValidator {
         config.inventoryPresets.panelSide = config.inventoryPresets.panelSide == null
                 ? PresetPanelSide.AUTO
                 : config.inventoryPresets.panelSide;
+        config.inventorySearch.displayMode = config.inventorySearch.displayMode == null
+                ? InventorySearchDisplayMode.DIM
+                : config.inventorySearch.displayMode;
 
         config.commands.prefix = config.commands.prefix == null ? MessagePrefixMode.DOTMOD_COLON : config.commands.prefix;
         config.commands.customPrefix = text(config.commands.customPrefix, "dotMod:", 32);

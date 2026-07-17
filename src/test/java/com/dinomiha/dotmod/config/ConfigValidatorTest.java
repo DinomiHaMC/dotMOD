@@ -4,6 +4,7 @@ import com.dinomiha.dotmod.hud.HudElement;
 import com.dinomiha.dotmod.hud.widget.HudWidgetDefaults;
 import com.dinomiha.dotmod.hud.widget.HudWidgetSettings;
 import com.dinomiha.dotmod.storage.UnsupportedDataVersionException;
+import com.google.gson.Gson;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -90,7 +91,7 @@ class ConfigValidatorTest {
         assertEquals(-42, hearts.offsetY);
         assertTrue(migrated.durability.enabled);
         assertTrue(migrated.hud.widgets.containsKey("addon.legacy"));
-        assertEquals(4, migrated.schemaVersion);
+        assertEquals(5, migrated.schemaVersion);
     }
 
     @Test
@@ -117,5 +118,24 @@ class ConfigValidatorTest {
 
         config.hud.resetOffsets();
         assertTrue(config.hud.widgets.containsKey("addon.widget"));
+    }
+
+    @Test
+    void schemaFiveMigrationPreservesExplicitSearchChoiceAndOldMissingDefault() {
+        Gson gson = new Gson();
+        DotModConfig enabled = gson.fromJson("{\"schemaVersion\":4,\"inventorySearch\":{\"enabled\":true}}", DotModConfig.class);
+        DotModConfig disabled = gson.fromJson("{\"schemaVersion\":4,\"inventorySearch\":{\"enabled\":false}}", DotModConfig.class);
+        DotModConfig missing = gson.fromJson("{\"schemaVersion\":4}", DotModConfig.class);
+        DotModConfig explicitNull = gson.fromJson("{\"schemaVersion\":4,\"inventorySearch\":null}", DotModConfig.class);
+
+        enabled.validate();
+        disabled.validate();
+        missing.validate();
+        explicitNull.validate();
+
+        assertTrue(enabled.inventorySearch.enabled);
+        assertFalse(disabled.inventorySearch.enabled);
+        assertFalse(missing.inventorySearch.enabled);
+        assertFalse(explicitNull.inventorySearch.enabled);
     }
 }

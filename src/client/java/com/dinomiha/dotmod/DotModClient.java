@@ -6,6 +6,7 @@ import com.dinomiha.dotmod.config.PlayerColorService;
 import com.dinomiha.dotmod.gui.InventoryButtons;
 import com.dinomiha.dotmod.feature.preset.screen.PresetPanelController;
 import com.dinomiha.dotmod.feature.durability.DurabilityWarningController;
+import com.dinomiha.dotmod.feature.inventorysearch.screen.InventorySearchController;
 import com.dinomiha.dotmod.hud.widget.HudWidgetRegistry;
 import com.dinomiha.dotmod.keybind.DotModKeybinds;
 import com.dinomiha.dotmod.mixin.HandledScreenAccessor;
@@ -37,6 +38,7 @@ public final class DotModClient implements ClientModInitializer {
                         accessor.dotmod$getY(),
                         accessor.dotmod$getBackgroundWidth()
                 );
+                InventorySearchController.attach(client, handledScreen);
             }
             if (screen instanceof InventoryScreen inventoryScreen
                     && ConfigService.get().config().general.enabled

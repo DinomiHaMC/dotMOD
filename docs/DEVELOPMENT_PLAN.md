@@ -14,7 +14,8 @@ not committed when the audit started.
 | Stage 3 - Inventory Presets | Complete |
 | Stage 4 - Preset Helper | Complete |
 | Stage 5 - HUD Widgets and Durability | Complete |
-| Stages 6-10 | Not started |
+| Stage 6 - Inventory Search | Complete |
+| Stages 7-10 | Not started |
 
 The source-layout section below is the Stage 0 baseline. The current post-Stage
 1 architecture is documented in [`ARCHITECTURE.md`](ARCHITECTURE.md).
@@ -492,6 +493,21 @@ Goals:
   logical AND filters.
 - Integrate a compact search field and help button with handled screens.
 - Dim or visually hide non-matches without changing slot layout or inventory.
+
+Implemented query contract:
+
+```text
+diamond sword
+text:"Diamond Sword"
+id=minecraft:diamond_sword
+enchantment:sharpness & durability<=25%
+lore:"Quest item" & count>=2
+```
+
+Bare text means `all-text:`. String fields accept `:`, `=`, and `!=`; numeric
+`count` and remaining-percent `durability` also accept `<`, `<=`, `>`, and `>=`.
+Only explicit `&` is logical AND. Invalid syntax is fail-open and reports a
+typed source position.
 
 Planned files:
 

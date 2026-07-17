@@ -53,7 +53,7 @@ uninitialized configuration.
 
 ## Configuration
 
-`DotModConfig` has schema version `4` and these top-level categories:
+`DotModConfig` has schema version `5` and these top-level categories:
 
 ```text
 general, commands, hud, quickCraft, inventoryPresets, inventorySearch,
@@ -244,6 +244,37 @@ inventory budget across sibling branches, and uses a path-local cycle guard plus
 depth and node bounds.
 No helper class calls an interaction manager, slot click, recipe click, or craft
 packet API.
+
+## Inventory Search
+
+The search core is client-independent:
+
+```text
+QueryTokenizer -> QueryParser -> QueryNode/AndNode/FilterNode
+ItemSearchDocument + QueryNode -> InventorySearchEvaluator
+```
+
+Queries are bounded to 512 UTF-16 units and 16 AND clauses. Text uses Unicode
+NFKC, collapsed whitespace, and `Locale.ROOT` case normalization. Bare text maps
+to `all-text:`; malformed syntax returns a typed error with a source span and is
+never partially evaluated. Invalid queries fail open in the UI.
+
+`ItemSearchDocumentFactory` reads only client-known `ItemStack` data: localized
+name, item ID, explicit lore, normal/stored enchantments, count, remaining
+durability percent, and optionally bounded basic tooltip text. Documents cap
+individual and aggregate text, cache by full stack equality, clear on language
+replacement, and are built at no more than 64 new entries per frame.
+
+`InventorySearchController` attaches through per-screen Fabric events and keeps
+query state across re-init of the same screen. It hides its controls in narrow
+recipe-book mode and uses a targeted input bridge for Creative Inventory, whose
+native field bypasses normal child char dispatch. The help button is a nonmodal
+multiline tooltip and never intercepts slot input.
+
+`HandledScreenSearchMixin` renders DIM/HIDE rectangles immediately after
+`drawSlots()` while the matrix is in container-local coordinates. It does not
+change slot coordinates, enabled state, stack values, handler lists, focus,
+tooltips, clicks, drag handling, or packets.
 
 ## Messages And Commands
 

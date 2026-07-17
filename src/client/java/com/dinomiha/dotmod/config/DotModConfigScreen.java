@@ -79,6 +79,20 @@ public final class DotModConfigScreen {
                 ))
                 .setSaveConsumer(value -> config.inventoryPresets.panelSide = value)
                 .build());
+
+        ConfigCategory inventorySearch = builder.getOrCreateCategory(Text.translatable("config.dotmod.category.inventory_search"));
+        inventorySearch.addEntry(entries.startBooleanToggle(
+                        Text.translatable("config.dotmod.inventory_search.enabled"), config.inventorySearch.enabled)
+                .setSaveConsumer(value -> config.inventorySearch.enabled = value)
+                .build());
+        inventorySearch.addEntry(entries.startEnumSelector(
+                        Text.translatable("config.dotmod.inventory_search.mode"),
+                        InventorySearchDisplayMode.class,
+                        config.inventorySearch.displayMode)
+                .setEnumNameProvider(value -> Text.translatable(
+                        "config.dotmod.inventory_search.mode." + value.name().toLowerCase(Locale.ROOT)))
+                .setSaveConsumer(value -> config.inventorySearch.displayMode = value)
+                .build());
         quickCraft.addEntry(entries.startStrField(Text.translatable("config.dotmod.quick_craft.slots_2x2"), SlotListParser.format(config.quickCraft.slots2x2))
                 .setTooltip(Text.translatable("config.dotmod.quick_craft.slots_2x2.tooltip"))
                 .setSaveConsumer(value -> config.quickCraft.slots2x2 = SlotListParser.parse(value, List.of(9, 10, 18, 19)))

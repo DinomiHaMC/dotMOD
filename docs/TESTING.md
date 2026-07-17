@@ -42,6 +42,12 @@ Current JUnit coverage:
   and alpha color application;
 - durability reading boundaries and red-yellow-green interpolation;
 - monotonic durability warning cooldown, stale-key cleanup, and repair re-arm.
+- inventory-search schema defaults and explicit legacy enable-state migration;
+- tokenizer/parser examples, all comparison operators, quotes, escapes, source
+  spans, malformed input, limits, and 5,000 seeded fuzz strings;
+- localized/all-text, ID, lore, enchantment, count, durability, AND, and
+  non-damageable evaluator semantics;
+- bounded server-provided search document text and aggregate budgets.
 
 Run the complete verification and build:
 
@@ -199,17 +205,33 @@ Run the complete verification and build:
 - Verify creative mode, disconnect, disabled feature, and missing player clear
   warning state without config writes or crashes.
 
+## Stage 6 Manual Checklist
+
+### Inventory Search
+
+- Test player inventory and every available handled container, including
+  creative tabs, native creative search, recipe book wide/narrow, merchants,
+  mounts, furnaces, crafting outputs, and live server slot updates.
+- Test all string/numeric operators, combined `&` filters, quoted/escaped text,
+  localized names, item IDs, lore, normal/stored enchantments, durability
+  boundaries, counts, empty query, and invalid fail-open diagnostics.
+- Verify explanation and `?` help tooltips in English and Russian, including
+  exact error positions and match counts.
+- Test DIM/HIDE modes with normal click, right-click, shift-click, number swap,
+  offhand swap, drag, double-click, throw, tooltip, cursor stack, and Quick
+  Craft. Verify no input is suppressed and no stack/layout is changed.
+- Resize/re-init every screen and verify query text, callbacks, focus, layout,
+  document cache, and masks remain correct without duplicate widgets.
+- Fill or mod a container beyond 64 occupied slots and verify uncached items
+  remain visible while indexing progresses over subsequent frames.
+- Verify no inventory/custom packet is sent by search and disconnect/container
+  close behavior remains vanilla.
+
 ## Future Stage Checklists
 
 The following checks become active only after their implementation stage. They
 are retained here so features are not considered complete without in-game
 coverage.
-
-### Inventory Search
-
-- Test player inventory and every available handled container.
-- Test all operators, combined `&` filters, localized names, invalid syntax,
-  tooltip explanation, dim/hide modes, and empty queries.
 
 ### Command Features
 
