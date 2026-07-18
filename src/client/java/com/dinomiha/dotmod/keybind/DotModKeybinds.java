@@ -16,12 +16,10 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.util.Identifier;
 import net.minecraft.text.Text;
 import org.lwjgl.glfw.GLFW;
 
 public final class DotModKeybinds {
-    private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of("dotmod", "controls"));
     private static KeyBinding greenName;
     private static KeyBinding redName;
     private static KeyBinding resetName;
@@ -43,7 +41,8 @@ public final class DotModKeybinds {
     }
 
     private static KeyBinding register(String translationKey, int key) {
-        return KeyBindingHelper.registerKeyBinding(new KeyBinding(translationKey, InputUtil.Type.KEYSYM, key, CATEGORY));
+        return KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                translationKey, InputUtil.Type.KEYSYM, key, DotModKeybindCategory.INSTANCE));
     }
 
     public static Text description(String translationKey) {

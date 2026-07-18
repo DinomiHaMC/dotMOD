@@ -3,6 +3,7 @@ package com.dinomiha.dotmod.feature.freelook;
 import com.dinomiha.dotmod.config.ConfigService;
 import com.dinomiha.dotmod.config.FreelookActivation;
 import com.dinomiha.dotmod.config.FreelookPerspective;
+import com.dinomiha.dotmod.keybind.DotModKeybindCategory;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
@@ -13,13 +14,11 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.Perspective;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.util.Identifier;
 
 public final class FreelookController {
     public enum RuntimeState { ACTIVE, RETURNING, IDLE }
 
     private static final FreelookController INSTANCE = new FreelookController();
-    private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of("dotmod", "controls"));
 
     private final FreelookCameraState camera = new FreelookCameraState();
     private KeyBinding activationKey;
@@ -37,7 +36,8 @@ public final class FreelookController {
 
     public static void initialize() {
         INSTANCE.activationKey = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.dotmod.freelook", InputUtil.Type.KEYSYM, InputUtil.UNKNOWN_KEY.getCode(), CATEGORY));
+                "key.dotmod.freelook", InputUtil.Type.KEYSYM, InputUtil.UNKNOWN_KEY.getCode(),
+                DotModKeybindCategory.INSTANCE));
         ClientTickEvents.END_CLIENT_TICK.register(INSTANCE::tick);
         ClientWorldEvents.AFTER_CLIENT_WORLD_CHANGE.register((client, world) -> INSTANCE.hardReset(client));
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> INSTANCE.hardReset(client));

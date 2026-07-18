@@ -2,6 +2,7 @@ package com.dinomiha.dotmod.feature.togglewalk;
 
 import com.dinomiha.dotmod.config.ConfigService;
 import com.dinomiha.dotmod.config.DotModConfig;
+import com.dinomiha.dotmod.keybind.DotModKeybindCategory;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientWorldEvents;
@@ -15,12 +16,10 @@ import net.minecraft.client.gui.screen.ChatScreen;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.client.option.StickyKeyBinding;
 import net.minecraft.client.util.InputUtil;
-import net.minecraft.util.Identifier;
 import org.lwjgl.glfw.GLFW;
 
 public final class MovementLifecycle {
     private static final MovementLifecycle INSTANCE = new MovementLifecycle();
-    private static final KeyBinding.Category CATEGORY = KeyBinding.Category.create(Identifier.of("dotmod", "controls"));
 
     private final ToggleWalkController controller = new ToggleWalkController();
     private KeyBinding toggleWalk;
@@ -67,7 +66,8 @@ public final class MovementLifecycle {
     }
 
     private static KeyBinding register(String translation, int key) {
-        return KeyBindingHelper.registerKeyBinding(new KeyBinding(translation, InputUtil.Type.KEYSYM, key, CATEGORY));
+        return KeyBindingHelper.registerKeyBinding(new KeyBinding(
+                translation, InputUtil.Type.KEYSYM, key, DotModKeybindCategory.INSTANCE));
     }
 
     private void tick(MinecraftClient client) {
