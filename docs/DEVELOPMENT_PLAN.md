@@ -97,8 +97,8 @@ release automation, or persisted-data schema version.
   stores colors by UUID.
 - Uniform Name Tags applies screen-space scaling and a configurable opaque
   background to visible player name tags.
-- Toggle Walk/Shift uses lifecycle-scoped key ownership, sprint retention, and
-  an emergency release; active state is not persisted.
+- Toggle Walk/Sprint/Shift uses lifecycle-scoped key ownership, independent
+  sprint retention/latching, and an emergency release; active state is not persisted.
 - Freelook provides packet-free relative camera orbit and smooth return.
 - Cloth Config and Mod Menu expose the current settings.
 
@@ -724,9 +724,11 @@ Automated results and the explicitly limited manual compatibility record are in
 
 Status: **Complete**
 
-Toggle Walk now captures rebound forward/sprint/jump combinations with jump
-ownership and release coverage. Freelook always owns third-person back through
-normal return. Schema 8 adds runtime-only Full Brightness through the vanilla
+Toggle Walk captures rebound forward/sprint/jump combinations with jump
+ownership and release coverage. Toggle Sprint independently latches the rebound
+vanilla Sprint binding; schema 9 adds its enabled-by-default config without
+persisting runtime state. Freelook always owns third-person back through normal
+return. Schema 8 adds runtime-only Full Brightness through the vanilla
 night-vision lightmap factor without changing gamma or applying an effect.
 
 ## Verification Policy

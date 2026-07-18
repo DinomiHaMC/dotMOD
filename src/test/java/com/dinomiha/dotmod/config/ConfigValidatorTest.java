@@ -91,7 +91,7 @@ class ConfigValidatorTest {
         assertEquals(-42, hearts.offsetY);
         assertTrue(migrated.durability.enabled);
         assertTrue(migrated.hud.widgets.containsKey("addon.legacy"));
-        assertEquals(8, migrated.schemaVersion);
+        assertEquals(9, migrated.schemaVersion);
     }
 
     @Test
@@ -208,5 +208,24 @@ class ConfigValidatorTest {
         migrated.validate();
 
         assertEquals(-50, migrated.hud.widgets.get("dotmod.movement").offsetX);
+    }
+
+    @Test
+    void schemaNineEnablesToggleSprintButPreservesCurrentExplicitFalse() {
+        Gson gson = new Gson();
+        DotModConfig migrated = gson.fromJson(
+                "{\"schemaVersion\":8,\"toggleWalk\":{\"toggleSprint\":{\"enabled\":false}}}",
+                DotModConfig.class
+        );
+        DotModConfig current = gson.fromJson(
+                "{\"schemaVersion\":9,\"toggleWalk\":{\"toggleSprint\":{\"enabled\":false}}}",
+                DotModConfig.class
+        );
+
+        migrated.validate();
+        current.validate();
+
+        assertTrue(migrated.toggleWalk.toggleSprint.enabled);
+        assertFalse(current.toggleWalk.toggleSprint.enabled);
     }
 }

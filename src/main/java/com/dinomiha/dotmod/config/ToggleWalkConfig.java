@@ -5,5 +5,6 @@ public final class ToggleWalkConfig {
     public boolean retainSprint = true;
     public boolean deactivateInChat = true;
     public boolean deactivateInOtherScreens = true;
+    public ToggleSprintConfig toggleSprint = new ToggleSprintConfig();
     public ToggleShiftConfig toggleShift = new ToggleShiftConfig();
 }

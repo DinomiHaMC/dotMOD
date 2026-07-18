@@ -17,7 +17,7 @@ public final class MovementIndicatorWidget implements HudWidget {
     @Override
     public boolean hasContent(MinecraftClient client, boolean preview) {
         var snapshot = MovementLifecycle.snapshot();
-        return preview || snapshot.movementActive() || snapshot.sneaking();
+        return preview || snapshot.movementActive() || snapshot.toggleSprintActive() || snapshot.sneaking();
     }
 
     @Override

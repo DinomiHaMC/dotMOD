@@ -13,7 +13,7 @@ server plugin, custom protocol, or server-side dotMOD installation.
 - Parsed inventory search with item, lore, enchantment, count, and durability filters.
 - Fast local command history, aliases, recolor tools, and `/dot` commands.
 - Death History with inventory/effect snapshots and optional deferred screenshots.
-- Toggle Walk/Shift with captured forward/sprint/jump combinations and safe release.
+- Toggle Walk/Sprint/Shift with captured movement, rebound Sprint-key latching, and safe release.
 - Hold/toggle Freelook with enforced third-person orbit and exact restoration.
 - Local Full Brightness using night-vision lightmap strength without an effect or gamma changes.
 

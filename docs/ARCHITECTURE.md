@@ -57,7 +57,7 @@ uninitialized configuration.
 
 ## Configuration
 
-`DotModConfig` has schema version `8` and these top-level categories:
+`DotModConfig` has schema version `9` and these top-level categories:
 
 ```text
 general, commands, hud, quickCraft, inventoryPresets, inventorySearch,
@@ -84,6 +84,9 @@ legacy Toggle Shift active bit is ignored.
 Schema 8 adds enabled-by-default `fullBrightness`. Earlier schemas also migrate
 Freelook to mandatory third-person-back activation; the legacy perspective enum
 remains deserializable but is no longer exposed or used to disable the policy.
+
+Schema 9 adds enabled-by-default `toggleWalk.toggleSprint`. Schema 9 preserves
+an explicit disabled value. All movement latch state remains runtime-only.
 
 The legacy flat `config/dotmod.json` migration maps every existing field into
 the categorized model and moves UUID colors into their own document. Migration
@@ -178,12 +181,13 @@ overlay message.
 ## Movement And Freelook
 
 `ToggleWalkController`, `ForcedKeyState`, and movement snapshots are pure state.
-Activation is independent from forward so captured forward/sprint/jump
-combinations include SPACE-only. The client `MovementLifecycle` polls rebound
-keyboard or mouse bindings before forcing and owns only forward, sprint, jump,
-and sneak bindings it changes. User release restores physical input; lifecycle
-boundaries hard-release. It never calls `KeyBinding.unpressAll` or mutates
-player sprint state.
+Toggle Walk activation is independent from forward so captured
+forward/sprint/jump combinations include SPACE-only. Toggle Sprint is a separate
+controller latch whose sprint force is ORed with Toggle Walk retention. The
+client `MovementLifecycle` polls rebound keyboard or mouse bindings before
+forcing and owns only forward, sprint, jump, and sneak bindings it changes. User
+release restores physical input; lifecycle boundaries hard-release. It never
+calls `KeyBinding.unpressAll` or mutates player sprint state.
 
 Freelook keeps relative yaw/pitch offsets in `FreelookCameraState` and uses a
 smoothstep `CameraReturnAnimation`. `MouseMixin` wraps the processed local look

@@ -55,6 +55,7 @@ class ConfigServiceMigrationTest {
         ConfigService service = new ConfigService(paths);
 
         assertFalse(service.config().general.enabled);
+        assertTrue(service.config().toggleWalk.toggleSprint.enabled);
         String persisted = Files.readString(paths.configFile());
         assertTrue(persisted.contains("\"schemaVersion\": " + DotModConfig.CURRENT_SCHEMA_VERSION));
         assertTrue(Files.exists(paths.configFile().resolveSibling("config.json.bak")));

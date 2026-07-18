@@ -48,9 +48,11 @@ class ToggleWalkControllerTest {
     void lifecycleAndEmergencyReleaseEveryOwnedState() {
         ToggleWalkController controller = new ToggleWalkController();
         controller.toggleWalk(context(true), NONE);
+        controller.toggleSprint(context(true));
         controller.toggleSneak(context(true));
         controller.update(context(true));
         MovementSnapshot released = controller.release(MovementReleaseReason.EMERGENCY);
+        assertFalse(released.toggleSprintActive());
         assertEquals(ForcedKeyState.NONE, released.forcedKeys());
         assertEquals(MovementReleaseReason.EMERGENCY, released.lastReleaseReason());
     }
@@ -72,6 +74,58 @@ class ToggleWalkControllerTest {
         assertTrue(controller.deactivateWalk(MovementReleaseReason.DISABLED).sneaking());
         assertFalse(controller.snapshot().movementActive());
         assertEquals(ForcedKeyState.NONE, controller.deactivateSneak(MovementReleaseReason.DISABLED).forcedKeys());
+    }
+
+    @Test
+    void sprintOnlyToggleImmediatelyForcesSprintAndSecondToggleReleasesIt() {
+        ToggleWalkController controller = new ToggleWalkController();
+
+        assertTrue(controller.toggleSprint(context(false)));
+        assertEquals(new ForcedKeyState(false, true, false, false), controller.snapshot().forcedKeys());
+        assertFalse(controller.snapshot().movementActive());
+
+        assertFalse(controller.toggleSprint(context(false)));
+        assertEquals(ForcedKeyState.NONE, controller.snapshot().forcedKeys());
+    }
+
+    @Test
+    void sprintToggleIsIndependentFromCapturedSprintRetention() {
+        ToggleWalkController controller = new ToggleWalkController();
+        controller.toggleWalk(context(false), new ForcedKeyState(true, true, false, false));
+        controller.toggleSprint(context(false));
+
+        assertFalse(controller.toggleSprint(context(false)));
+        assertFalse(controller.snapshot().toggleSprintActive());
+        assertTrue(controller.snapshot().sprintRetentionArmed());
+        assertEquals(new ForcedKeyState(true, true, false, false), controller.snapshot().forcedKeys());
+    }
+
+    @Test
+    void lifecycleInvalidationClearsSprintToggle() {
+        ToggleWalkController controller = new ToggleWalkController();
+        controller.toggleSprint(context(false));
+        MovementContext focusLost = new MovementContext(true, true, true, true, false, true, false);
+
+        MovementSnapshot released = controller.update(focusLost);
+
+        assertFalse(released.toggleSprintActive());
+        assertEquals(ForcedKeyState.NONE, released.forcedKeys());
+        assertEquals(MovementReleaseReason.FOCUS_LOSS, released.lastReleaseReason());
+    }
+
+    @Test
+    void sprintFeatureDisableClearsOnlySprintLatch() {
+        ToggleWalkController controller = new ToggleWalkController();
+        controller.toggleWalk(context(false), new ForcedKeyState(true, false, true, false));
+        controller.toggleSneak(context(false));
+        controller.toggleSprint(context(false));
+
+        MovementSnapshot snapshot = controller.deactivateSprint(MovementReleaseReason.DISABLED);
+
+        assertFalse(snapshot.toggleSprintActive());
+        assertTrue(snapshot.movementActive());
+        assertTrue(snapshot.sneaking());
+        assertEquals(new ForcedKeyState(true, false, true, true), snapshot.forcedKeys());
     }
 
     @Test

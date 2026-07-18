@@ -269,15 +269,18 @@ client or platform environment.
   world is marked failed without affecting the new world.
 - Verify ordinary F2 screenshots remain vanilla and unaffected.
 
-### Toggle Walk, Freelook, And Full Brightness
+### Toggle Walk/Sprint, Freelook, And Full Brightness
 
-- Automated coverage verifies movement capture/default/release and sprint arming,
+- Automated coverage verifies movement capture/default/release, sprint arming,
+  independent Toggle Sprint forcing/disable/lifecycle release, schema-9 migration,
   relative camera offsets, wrapping, pitch clamping, sensitivity/inversion,
   finite-input rejection, smoothstep monotonicity, zero-duration return,
   Full Brightness toggle state, schema-8 migration, and translation key parity.
 - Test rebound keyboard/mouse forward, sprint, and jump combinations, including
   SPACE-only, Hold/Toggle accessibility modes, chat,
   menus, death, disconnect, emergency stop, and HUD indicators.
+- Toggle Sprint while standing still, then walk forward; verify vanilla sprint
+  starts and toggle-off preserves a physically held rebound Sprint key.
 - Test Freelook hold/toggle, first/third person, pitch bounds, inversions,
   sensitivity, third-person return timing, manual F5 ownership, movement
   direction, server-visible rotation, and camera/render mixin compatibility.

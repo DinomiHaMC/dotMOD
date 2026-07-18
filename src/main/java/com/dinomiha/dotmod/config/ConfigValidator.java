@@ -57,6 +57,11 @@ public final class ConfigValidator {
                 movement.offsetX -= 60;
             }
         }
+        config.toggleWalk.toggleSprint = config.toggleWalk.toggleSprint == null
+                ? new ToggleSprintConfig() : config.toggleWalk.toggleSprint;
+        if (loadedSchema < 9) {
+            config.toggleWalk.toggleSprint.enabled = true;
+        }
         config.playerColors = config.playerColors == null ? new PlayerColorsConfig() : config.playerColors;
         config.keybinds = config.keybinds == null ? new KeybindsConfig() : config.keybinds;
         config.interfaceConfig = config.interfaceConfig == null ? new InterfaceConfig() : config.interfaceConfig;

@@ -263,6 +263,10 @@ public final class DotModConfigScreen {
                 .setTooltip(Text.translatable("config.dotmod.toggle_walk.retain_sprint.tooltip"))
                 .setSaveConsumer(value -> config.toggleWalk.retainSprint = value)
                 .build());
+        movement.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.toggle_sprint.enabled"), config.toggleWalk.toggleSprint.enabled)
+                .setTooltip(Text.translatable("config.dotmod.toggle_sprint.enabled.tooltip"))
+                .setSaveConsumer(value -> config.toggleWalk.toggleSprint.enabled = value)
+                .build());
         movement.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.toggle_walk.deactivate_chat"), config.toggleWalk.deactivateInChat)
                 .setSaveConsumer(value -> config.toggleWalk.deactivateInChat = value)
                 .build());
@@ -306,6 +310,7 @@ public final class DotModConfigScreen {
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.uniform_name_tags")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.toggle_shift")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.toggle_walk")).build());
+        keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.toggle_sprint")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.emergency_release")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.freelook")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.full_brightness")).build());

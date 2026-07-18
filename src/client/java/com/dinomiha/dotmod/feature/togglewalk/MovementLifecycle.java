@@ -23,6 +23,7 @@ public final class MovementLifecycle {
 
     private final ToggleWalkController controller = new ToggleWalkController();
     private KeyBinding toggleWalk;
+    private KeyBinding toggleSprint;
     private KeyBinding toggleShift;
     private KeyBinding emergencyRelease;
     private Object ownerPlayer;
@@ -38,6 +39,7 @@ public final class MovementLifecycle {
 
     public static void initialize() {
         INSTANCE.toggleWalk = register("key.dotmod.toggle_walk", InputUtil.UNKNOWN_KEY.getCode());
+        INSTANCE.toggleSprint = register("key.dotmod.toggle_sprint", InputUtil.UNKNOWN_KEY.getCode());
         INSTANCE.toggleShift = register("key.dotmod.toggle_shift", GLFW.GLFW_KEY_RIGHT_SHIFT);
         INSTANCE.emergencyRelease = register("key.dotmod.emergency_release", InputUtil.UNKNOWN_KEY.getCode());
         ClientTickEvents.START_CLIENT_TICK.register(INSTANCE::tick);
@@ -94,6 +96,8 @@ public final class MovementLifecycle {
         DotModConfig config = ConfigService.get().config();
         if (!config.toggleWalk.enabled && controller.snapshot().movementActive())
             controller.deactivateWalk(MovementReleaseReason.DISABLED);
+        if (!config.toggleWalk.toggleSprint.enabled && controller.snapshot().toggleSprintActive())
+            controller.deactivateSprint(MovementReleaseReason.DISABLED);
         if (!config.toggleWalk.toggleShift.enabled && controller.snapshot().sneaking())
             controller.deactivateSneak(MovementReleaseReason.DISABLED);
         MovementContext context = context(client);
@@ -110,6 +114,12 @@ public final class MovementLifecycle {
                 userChanged = true;
             }
         }
+        while (toggleSprint.wasPressed()) {
+            if (ConfigService.get().config().toggleWalk.toggleSprint.enabled) {
+                controller.toggleSprint(context);
+                userChanged = true;
+            }
+        }
         apply(client, controller.update(context).forcedKeys(), userChanged);
     }
 
@@ -119,6 +129,9 @@ public final class MovementLifecycle {
             // Prevent a conflicting binding from reactivating movement.
         }
         while (toggleShift.wasPressed()) {
+            // Prevent a conflicting binding from reactivating movement.
+        }
+        while (toggleSprint.wasPressed()) {
             // Prevent a conflicting binding from reactivating movement.
         }
     }

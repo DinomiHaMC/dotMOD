@@ -5,6 +5,7 @@ public final class ToggleWalkController {
     private boolean capturedForward;
     private boolean capturedJump;
     private boolean sneaking;
+    private boolean toggleSprintActive;
     private boolean sprintRetentionArmed;
     private MovementReleaseReason lastReleaseReason;
 
@@ -37,6 +38,14 @@ public final class ToggleWalkController {
         return sneaking;
     }
 
+    public boolean toggleSprint(MovementContext context) {
+        if (!toggleSprintActive && !context.canRemainActive()) {
+            return false;
+        }
+        toggleSprintActive = !toggleSprintActive;
+        return toggleSprintActive;
+    }
+
     public MovementSnapshot update(MovementContext context) {
         if (!context.canRemainActive()) {
             release(reason(context));
@@ -53,6 +62,7 @@ public final class ToggleWalkController {
         capturedForward = false;
         capturedJump = false;
         sneaking = false;
+        toggleSprintActive = false;
         sprintRetentionArmed = false;
         lastReleaseReason = reason;
         return snapshot();
@@ -73,14 +83,21 @@ public final class ToggleWalkController {
         return snapshot();
     }
 
+    public MovementSnapshot deactivateSprint(MovementReleaseReason reason) {
+        toggleSprintActive = false;
+        lastReleaseReason = reason;
+        return snapshot();
+    }
+
     public MovementSnapshot snapshot() {
         return new MovementSnapshot(
                 movementActive,
                 sneaking,
+                toggleSprintActive,
                 sprintRetentionArmed,
                 new ForcedKeyState(
                         movementActive && capturedForward,
-                        movementActive && sprintRetentionArmed,
+                        toggleSprintActive || movementActive && sprintRetentionArmed,
                         movementActive && capturedJump,
                         sneaking
                 ),

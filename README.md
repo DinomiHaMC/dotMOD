@@ -2,7 +2,7 @@
 
 dotMOD is a client-side Fabric utility mod for Minecraft 1.21.11. It combines
 compact crafting controls, a draggable vanilla HUD editor, local player colors,
-uniform player name tags, captured Toggle Walk movement, Full Brightness, and
+uniform player name tags, Toggle Walk/Sprint movement, Full Brightness, and
 packet-free Freelook without requiring a server plugin or server installation.
 
 - Current version: **2.0.0**
@@ -54,7 +54,7 @@ widgets:
 - equipped armor icons;
 - colored online players;
 - compact durability readings.
-- Toggle Walk/Shift runtime state;
+- Toggle Walk/Sprint/Shift runtime state;
 - Freelook activity and camera return state.
 
 Each element can be dragged independently. Positions use a nine-point screen
@@ -119,20 +119,25 @@ and adds an opaque configurable background.
 This feature changes only player labels rendered by the client. It does not make
 hidden or otherwise unavailable players visible.
 
-### Toggle Walk And Shift
+### Toggle Walk, Sprint, And Shift
 
 Toggle Walk snapshots the physically held forward, sprint, and jump bindings,
 then forces exactly that combination until toggled off. If none are held it
 defaults to forward. Sprint is captured only when retention is enabled; observed
 vanilla sprint can still arm retention while forward is active. It never calls
-`setSprinting`. Toggle Shift shares the lifecycle-safe input owner for sneak.
+`setSprinting`. Toggle Sprint independently holds the user's rebound vanilla
+Sprint binding, including while standing still, so later forward movement can
+start vanilla sprint. Toggle Shift shares the lifecycle-safe input owner for
+sneak.
 
-- Toggle Walk and emergency release are unbound by default; bind them in Controls.
+- Toggle Walk, Toggle Sprint, and emergency release are unbound by default; bind
+  them in Controls.
 - Toggle Shift defaults to `Right Shift`.
 - Ordinary physically held keys are restored after user toggle-off.
 - Configured chat/screens, focus loss, death, disconnect, world/player changes,
   and client shutdown hard-release every key dotMOD changed.
-- Vanilla Hold and Toggle sneak accessibility modes are supported.
+- Vanilla Hold and Toggle sneak accessibility modes are supported, including
+  safe sticky-key release.
 - Active movement state is runtime-only and always starts inactive.
 
 ### Freelook
