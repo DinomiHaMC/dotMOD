@@ -147,11 +147,10 @@ and disabling hard-reset immediately. Manual F5 changes remain user-owned.
 
 ### Full Brightness
 
-Full Brightness is an unbound local toggle that temporarily sets vanilla gamma
-to its supported maximum. It restores the exact previous value when disabled,
-disconnected, or stopped. Video Settings suspends the override so gamma can be
-edited; the selected value is retained for restoration after the screen closes.
-Runtime active state is never persisted and the feature does not write options.
+Full Brightness is an unbound local toggle that feeds full vanilla night-vision
+strength into the lightmap. It is stronger than maximum gamma, does not apply a
+status effect or icon, sends no packet, and never changes the gamma slider or
+`options.txt`. Runtime active state is never persisted and resets on disconnect.
 
 ### InvSeeMenu (ISM)
 

@@ -726,8 +726,8 @@ Status: **Complete**
 
 Toggle Walk now captures rebound forward/sprint/jump combinations with jump
 ownership and release coverage. Freelook always owns third-person back through
-normal return. Schema 8 adds runtime-only Full Brightness with tested gamma
-ownership, Video Settings suspension, configuration, keybind, and localization.
+normal return. Schema 8 adds runtime-only Full Brightness through the vanilla
+night-vision lightmap factor without changing gamma or applying an effect.
 
 ## Verification Policy
 

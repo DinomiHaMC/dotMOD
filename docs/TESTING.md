@@ -274,15 +274,16 @@ client or platform environment.
 - Automated coverage verifies movement capture/default/release and sprint arming,
   relative camera offsets, wrapping, pitch clamping, sensitivity/inversion,
   finite-input rejection, smoothstep monotonicity, zero-duration return,
-  gamma ownership/suspension, schema-8 migration, and translation key parity.
+  Full Brightness toggle state, schema-8 migration, and translation key parity.
 - Test rebound keyboard/mouse forward, sprint, and jump combinations, including
   SPACE-only, Hold/Toggle accessibility modes, chat,
   menus, death, disconnect, emergency stop, and HUD indicators.
 - Test Freelook hold/toggle, first/third person, pitch bounds, inversions,
   sensitivity, third-person return timing, manual F5 ownership, movement
   direction, server-visible rotation, and camera/render mixin compatibility.
-- Toggle Full Brightness at multiple gamma values; edit gamma in Video Settings,
-  then test global/feature disable, disconnect, and shutdown restoration.
+- Toggle Full Brightness at multiple gamma values and verify night-vision-like
+  lighting without an effect icon, gamma-slider changes, or option writes. Test
+  disable, disconnect, shutdown, real Night Vision, Darkness, and Sodium.
 - The Stage 9 build gates are `compileClientJava`, `clean build`, and
   `git diff --check`; runtime packet and camera compatibility remain manual.
 

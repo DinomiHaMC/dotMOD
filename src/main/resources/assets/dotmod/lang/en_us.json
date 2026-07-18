@@ -119,7 +119,7 @@
   "config.dotmod.freelook.activation.hold": "Hold",
   "config.dotmod.freelook.activation.toggle": "Toggle",
   "config.dotmod.full_brightness.enabled": "Enable Full Brightness",
-  "config.dotmod.full_brightness.enabled.tooltip": "Locally toggles gamma to maximum and restores your exact previous setting",
+  "config.dotmod.full_brightness.enabled.tooltip": "Uses the vanilla night-vision lightmap locally without changing gamma or applying an effect",
   "config.dotmod.freelook.sensitivity": "Freelook sensitivity",
   "config.dotmod.freelook.invert_x": "Invert horizontal look",
   "config.dotmod.freelook.invert_y": "Invert vertical look",

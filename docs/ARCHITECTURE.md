@@ -194,10 +194,11 @@ configuration boundaries. Activation always owns third-person back through the
 return animation and restores the exact prior perspective unless manual F5
 relinquishes ownership.
 
-`GammaOwnershipState` is the pure Full Brightness state model. Its client
-adapter owns `GameOptions#getGamma()` only at runtime, suspends and tracks the
-user value in `VideoOptionsScreen`, restores idempotently on disable/disconnect/
-shutdown, and never calls `GameOptions.write()`.
+`FullBrightnessState` is the pure runtime toggle. `LightmapTextureManagerMixin`
+replaces only the vanilla lightmap shader's final night-vision factor while the
+toggle is active. It does not create a status effect, mutate `GameOptions`, or
+write gamma to disk; the controller requests a lightmap refresh only on state
+transitions and resets on disable, disconnect, or shutdown.
 
 Movement and Freelook indicators are ordinary registered custom HUD widgets.
 They perform no IO, hide while idle, and remain visible in editor preview mode.

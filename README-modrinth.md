@@ -15,7 +15,7 @@ server plugin, custom protocol, or server-side dotMOD installation.
 - Death History with inventory/effect snapshots and optional deferred screenshots.
 - Toggle Walk/Shift with captured forward/sprint/jump combinations and safe release.
 - Hold/toggle Freelook with enforced third-person orbit and exact restoration.
-- Local Full Brightness toggle with Video Settings suspension and gamma restoration.
+- Local Full Brightness using night-vision lightmap strength without an effect or gamma changes.
 
 All user-facing configuration and messages are available in English and Russian.
 Configuration and versioned feature data are stored below `config/dotmod/` with

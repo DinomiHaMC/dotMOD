@@ -11,6 +11,7 @@
     "PlayerEntityRendererMixin",
     "PlayerListHudMixin",
     "MinecraftClientRenderMixin",
+    "LightmapTextureManagerMixin",
     "MouseMixin",
     "CameraMixin"
   ],
