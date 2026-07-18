@@ -14,23 +14,49 @@ import net.minecraft.client.gui.widget.ButtonWidget;
 import net.minecraft.screen.ScreenHandler;
 import net.minecraft.text.Text;
 
+import java.lang.ref.WeakReference;
+import java.util.Map;
+import java.util.WeakHashMap;
+
 public final class InventoryButtons {
+    private static final Map<HandledScreen<?>, WeakReference<Controller>> CONTROLLERS = new WeakHashMap<>();
+
     private InventoryButtons() {
     }
 
-    public static void add(HandledScreen<?> screen, ButtonAdder adder, int x, int y, int backgroundWidth) {
-        DotModConfig config = ConfigService.get().config();
-        boolean quickCraftSupported = screen instanceof InventoryScreen || screen instanceof CraftingScreen;
-        boolean hudSupported = quickCraftSupported || screen instanceof CreativeInventoryScreen;
-        if (!hudSupported) {
-            return;
+    public static void attach(HandledScreen<?> screen, ButtonAdder adder, int x, int y, int backgroundWidth) {
+        WeakReference<Controller> reference = CONTROLLERS.get(screen);
+        Controller controller = reference == null ? null : reference.get();
+        if (controller == null) {
+            controller = new Controller(screen);
+            CONTROLLERS.put(screen, new WeakReference<>(controller));
         }
-        int right = x + backgroundWidth;
-        ButtonWidget quickCraftButton;
-        if (quickCraftSupported) {
-            Text label = localizedButtonText(config.quickCraft.buttonText, "Craft", "button.dotmod.quick_craft");
-            int width = Math.max(44, MinecraftClient.getInstance().textRenderer.getWidth(label) + 16);
-            quickCraftButton = DotButton.create(
+        controller.registerEvents();
+        controller.init(adder, x, y, backgroundWidth);
+    }
+
+    private static final class Controller {
+        private final HandledScreen<?> screen;
+        private ButtonWidget quickCraftButton;
+        private ButtonWidget hudButton;
+        private boolean eventsRegistered;
+
+        private Controller(HandledScreen<?> screen) {
+            this.screen = screen;
+        }
+
+        private void init(ButtonAdder adder, int x, int y, int backgroundWidth) {
+            DotModConfig config = ConfigService.get().config();
+            boolean quickCraftSupported = screen instanceof InventoryScreen || screen instanceof CraftingScreen;
+            boolean hudSupported = quickCraftSupported || screen instanceof CreativeInventoryScreen;
+            if (!hudSupported) {
+                return;
+            }
+            int right = x + backgroundWidth;
+            if (quickCraftSupported) {
+                Text label = localizedButtonText(config.quickCraft.buttonText, "Craft", "button.dotmod.quick_craft");
+                int width = Math.max(44, MinecraftClient.getInstance().textRenderer.getWidth(label) + 16);
+                quickCraftButton = DotButton.create(
                     right + config.quickCraft.buttonOffsetX,
                     y + config.quickCraft.buttonOffsetY,
                     width,
@@ -38,17 +64,16 @@ public final class InventoryButtons {
                     Text.translatable("button.dotmod.quick_craft.tooltip"),
                     button -> QuickCraft.perform(screen.getScreenHandler())
             );
-            quickCraftButton.visible = config.general.enabled && config.quickCraft.enabled;
-            keepOnScreen(quickCraftButton, screen);
-            adder.add(quickCraftButton);
-        } else {
-            quickCraftButton = null;
-        }
-        ButtonWidget hudButton;
-        if (hudSupported) {
-            Text label = localizedButtonText(config.hud.editorButtonText, "HUD", "button.dotmod.hud_editor");
-            int width = Math.max(44, MinecraftClient.getInstance().textRenderer.getWidth(label) + 16);
-            hudButton = DotButton.create(
+                quickCraftButton.visible = config.general.enabled && config.quickCraft.enabled;
+                keepOnScreen(quickCraftButton, screen);
+                adder.add(quickCraftButton);
+            } else {
+                quickCraftButton = null;
+            }
+            if (hudSupported) {
+                Text label = localizedButtonText(config.hud.editorButtonText, "HUD", "button.dotmod.hud_editor");
+                int width = Math.max(44, MinecraftClient.getInstance().textRenderer.getWidth(label) + 16);
+                hudButton = DotButton.create(
                     right + config.hud.editorButtonOffsetX,
                     y + config.hud.editorButtonOffsetY,
                     width,
@@ -56,14 +81,21 @@ public final class InventoryButtons {
                     Text.translatable("button.dotmod.hud_editor.tooltip"),
                     button -> MinecraftClient.getInstance().setScreen(new HudEditorScreen(screen))
             );
-            hudButton.visible = config.general.enabled && config.hud.editorEnabled;
-            keepOnScreen(hudButton, screen);
-            adder.add(hudButton);
-        } else {
-            hudButton = null;
+                hudButton.visible = config.general.enabled && config.hud.editorEnabled;
+                keepOnScreen(hudButton, screen);
+                adder.add(hudButton);
+            } else {
+                hudButton = null;
+            }
         }
 
-        ScreenEvents.beforeRender(screen).register((ignored, context, mouseX, mouseY, tickDelta) -> {
+        private void registerEvents() {
+            if (eventsRegistered) return;
+            eventsRegistered = true;
+            ScreenEvents.beforeRender(screen).register((ignored, context, mouseX, mouseY, tickDelta) -> update());
+        }
+
+        private void update() {
             HandledScreenAccessor accessor = (HandledScreenAccessor) screen;
             int currentRight = accessor.dotmod$getX() + accessor.dotmod$getBackgroundWidth();
             DotModConfig currentConfig = ConfigService.get().config();
@@ -89,7 +121,7 @@ public final class InventoryButtons {
                 );
                 keepOnScreen(hudButton, screen);
             }
-        });
+        }
     }
 
     private static Text localizedButtonText(String configured, String legacyDefault, String translationKey) {

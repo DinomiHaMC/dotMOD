@@ -17,6 +17,9 @@ class LocalizationTest {
         JsonObject russian = language("ru_ru");
         assertEquals(english.keySet(), russian.keySet());
         assertNotNull(english.get("key.category.dotmod.controls"));
+        assertEquals("V", english.get("screen.dotmod.ism.mode.view.short").getAsString());
+        assertEquals("E", english.get("screen.dotmod.ism.mode.edit.short").getAsString());
+        assertEquals("C", english.get("screen.dotmod.ism.mode.creative.short").getAsString());
     }
 
     private static JsonObject language(String code) {

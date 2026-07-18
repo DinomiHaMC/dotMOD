@@ -96,9 +96,7 @@ public final class DeathRepository {
         Objects.requireNonNull(screenshot, "screenshot");
         return locked(() -> {
             DeathRecord current = requireWritable(id);
-            if (screenshot.relativePath() != null) {
-                ensureSafeRelativePath(Path.of(screenshot.relativePath()));
-            }
+            validateScreenshot(current.id(), screenshot);
             DeathRecord updated = current.withScreenshot(screenshot);
             write(updated, false);
             return updated;
@@ -106,7 +104,7 @@ public final class DeathRepository {
     }
 
     public DeathRecord markScreenshotSaved(UUID id, Path relativePath) {
-        ensureSafeRelativePath(relativePath);
+        requireCanonicalScreenshotPath(id, relativePath);
         return updateScreenshot(id, DeathScreenshot.saved(relativePath));
     }
 
@@ -163,7 +161,11 @@ public final class DeathRepository {
                 return Optional.empty();
             }
             DeathRecord record = document.toRecord(inventorySerializer, registries);
-            return record.id().equals(expectedId) ? Optional.of(record) : Optional.empty();
+            if (!record.id().equals(expectedId)) {
+                return Optional.empty();
+            }
+            validateScreenshot(expectedId, record.screenshot());
+            return Optional.of(record);
         } catch (IOException | RuntimeException ignored) {
             return Optional.empty();
         }
@@ -224,9 +226,9 @@ public final class DeathRepository {
         UUID id = record.id();
         Path source = recordPath(id);
         Path target = uniqueTrashPath(id);
-        if (record.screenshot().relativePath() != null) {
-            Path image = root.resolve(record.screenshot().relativePath()).normalize();
-            ensureSafeRelativePath(Path.of(record.screenshot().relativePath()));
+        if (record.screenshot().status() == com.dinomiha.dotmod.feature.death.model.ScreenshotStatus.SAVED) {
+            Path relative = canonicalScreenshotPath(id);
+            Path image = root.resolve(relative).normalize();
             if (Files.isRegularFile(image) && !Files.isSymbolicLink(image)) {
                 move(image, target.resolveSibling(target.getFileName() + ".png"));
             }
@@ -278,6 +280,25 @@ public final class DeathRepository {
         } catch (IOException exception) {
             throw new DeathException(DeathError.IO_FAILURE, "Could not validate screenshot path", exception);
         }
+    }
+
+    private void validateScreenshot(UUID id, DeathScreenshot screenshot) {
+        if (screenshot.status() == com.dinomiha.dotmod.feature.death.model.ScreenshotStatus.SAVED) {
+            requireCanonicalScreenshotPath(id, Path.of(screenshot.relativePath()));
+        }
+    }
+
+    private void requireCanonicalScreenshotPath(UUID id, Path relative) {
+        Objects.requireNonNull(id, "id");
+        Objects.requireNonNull(relative, "relative");
+        if (!relative.equals(canonicalScreenshotPath(id))) {
+            throw new DeathException(DeathError.INVALID_DATA, "Screenshot path does not belong to this death record");
+        }
+        ensureSafeRelativePath(relative);
+    }
+
+    private static Path canonicalScreenshotPath(UUID id) {
+        return Path.of("images", id + ".png");
     }
 
     private static void move(Path source, Path target) throws IOException {

@@ -41,7 +41,7 @@ public final class DotModClient implements ClientModInitializer {
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof HandledScreen<?> handledScreen) {
                 HandledScreenAccessor accessor = (HandledScreenAccessor) handledScreen;
-                InventoryButtons.add(
+                InventoryButtons.attach(
                         handledScreen,
                         button -> Screens.getButtons(screen).add(button),
                         accessor.dotmod$getX(),
@@ -50,10 +50,8 @@ public final class DotModClient implements ClientModInitializer {
                 );
                 InventorySearchController.attach(client, handledScreen);
             }
-            if (screen instanceof InventoryScreen inventoryScreen
-                    && ConfigService.get().config().general.enabled
-                    && ConfigService.get().config().inventoryPresets.enabled) {
-                new PresetPanelController(client, inventoryScreen).attach();
+            if (screen instanceof InventoryScreen inventoryScreen) {
+                PresetPanelController.attach(client, inventoryScreen);
             }
         });
     }

@@ -25,6 +25,7 @@ import net.minecraft.client.gui.widget.ClickableWidget;
 import net.minecraft.client.gui.widget.TextFieldWidget;
 import net.minecraft.text.Text;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -38,6 +39,7 @@ public final class PresetPanelController {
     private static final int MAX_ROWS = 5;
     private static final Map<InventoryScreen, PanelState> SCREEN_STATES = new WeakHashMap<>();
     private static final Map<InventoryScreen, Boolean> CAPTURE_STATES = new WeakHashMap<>();
+    private static final Map<InventoryScreen, WeakReference<PresetPanelController>> CONTROLLERS = new WeakHashMap<>();
 
     private final MinecraftClient client;
     private final InventoryScreen screen;
@@ -56,8 +58,9 @@ public final class PresetPanelController {
     private String query = "";
     private boolean mouseCaptured;
     private ClickableWidget capturedWidget;
+    private boolean eventsRegistered;
 
-    public PresetPanelController(MinecraftClient client, InventoryScreen screen) {
+    private PresetPanelController(MinecraftClient client, InventoryScreen screen) {
         this.client = client;
         this.screen = screen;
         PanelState state = SCREEN_STATES.get(screen);
@@ -68,7 +71,23 @@ public final class PresetPanelController {
         this.mouseCaptured = CAPTURE_STATES.getOrDefault(screen, false);
     }
 
-    public void attach() {
+    public static void attach(MinecraftClient client, InventoryScreen screen) {
+        WeakReference<PresetPanelController> reference = CONTROLLERS.get(screen);
+        PresetPanelController controller = reference == null ? null : reference.get();
+        if (controller == null) {
+            controller = new PresetPanelController(client, screen);
+            CONTROLLERS.put(screen, new WeakReference<>(controller));
+        }
+        controller.registerEvents();
+        controller.initWidgets();
+    }
+
+    private void initWidgets() {
+        widgets.clear();
+        rows.clear();
+        capturedWidget = null;
+        mouseCaptured = false;
+        CAPTURE_STATES.put(screen, false);
         search = add(DotTextField.create(
                 client.textRenderer, 0, 0, 80, 20,
                 Text.translatable("screen.dotmod.preset.search"),
@@ -84,7 +103,11 @@ public final class PresetPanelController {
         contextMenu = add(new DotContextMenu(client.textRenderer));
         refresh();
         updateLayout();
+    }
 
+    private void registerEvents() {
+        if (eventsRegistered) return;
+        eventsRegistered = true;
         ScreenEvents.afterBackground(screen).register((ignored, context, mouseX, mouseY, tickDelta) -> renderBackground(context));
         ScreenEvents.beforeRender(screen).register((ignored, context, mouseX, mouseY, tickDelta) -> updateLayout());
         ScreenMouseEvents.afterMouseScroll(screen).register((ignored, mouseX, mouseY, horizontalAmount, verticalAmount, consumed) -> {
@@ -220,6 +243,10 @@ public final class PresetPanelController {
     }
 
     private Bounds computeBounds() {
+        if (!ConfigService.get().config().general.enabled
+                || !ConfigService.get().config().inventoryPresets.enabled) {
+            return Bounds.hidden();
+        }
         HandledScreenAccessor accessor = (HandledScreenAccessor) screen;
         int inventoryX = accessor.dotmod$getX();
         int inventoryY = accessor.dotmod$getY();

@@ -8,8 +8,14 @@ import net.minecraft.client.util.ScreenshotRecorder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.LinkOption;
 import java.nio.file.Path;
+import java.nio.file.SecureDirectoryStream;
+import java.nio.file.StandardCopyOption;
+import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.BasicFileAttributeView;
 import java.util.ArrayDeque;
 import java.util.Queue;
 import java.util.UUID;
@@ -58,6 +64,8 @@ public final class DeathScreenshotQueue {
             ClientIoExecutor.INSTANCE.execute(() -> {
                 String error = null;
                 Path relative = Path.of("images", capture.recordId + ".png");
+                Path publishedTarget = null;
+                Object publishedFileKey = null;
                 try (image) {
                     Path deaths = DeathClientService.get().root();
                     Files.createDirectories(deaths);
@@ -73,26 +81,35 @@ public final class DeathScreenshotQueue {
                     }
                     ScreenshotPathPolicy policy = new ScreenshotPathPolicy(realImages);
                     Path target = policy.resolve(capture.recordId + ".png");
-                    image.writeTo(target);
-                    policy.validateExisting(target);
+                    Path temporary = Files.createTempFile(realImages, "." + capture.recordId + "-", ".tmp");
+                    try {
+                        image.writeTo(temporary);
+                        publish(images, realImages, temporary, target);
+                        policy.validateExisting(target);
+                        publishedTarget = target;
+                        publishedFileKey = Files.readAttributes(
+                                target, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS).fileKey();
+                    } finally {
+                        Files.deleteIfExists(temporary);
+                    }
                 } catch (Exception exception) {
                     error = message(exception);
                     LOGGER.error("Could not save death screenshot {}", capture.recordId, exception);
                 }
-                String failure = error;
-                client.execute(() -> {
-                    try {
-                        if (failure == null) {
-                            capture.repository.markScreenshotSaved(capture.recordId, relative);
-                        } else {
-                            capture.repository.markScreenshotFailed(capture.recordId, failure);
-                        }
-                    } catch (RuntimeException exception) {
-                        LOGGER.error("Could not update death screenshot state {}", capture.recordId, exception);
-                    } finally {
-                        captureInFlight = false;
+                try {
+                    if (error == null) {
+                        capture.repository.markScreenshotSaved(capture.recordId, relative);
+                    } else {
+                        capture.repository.markScreenshotFailed(capture.recordId, error);
                     }
-                });
+                } catch (RuntimeException exception) {
+                    LOGGER.error("Could not update death screenshot state {}", capture.recordId, exception);
+                    if (error == null) {
+                        removePublishedFile(publishedTarget, publishedFileKey);
+                    }
+                } finally {
+                    client.execute(() -> captureInFlight = false);
+                }
             });
         } catch (RuntimeException exception) {
             image.close();
@@ -100,16 +117,69 @@ public final class DeathScreenshotQueue {
         }
     }
 
-    private static void fail(MinecraftClient client, PendingCapture capture, String error) {
-        client.execute(() -> {
-            try {
-                capture.repository.markScreenshotFailed(capture.recordId, error);
-            } catch (RuntimeException exception) {
-                LOGGER.error("Could not mark death screenshot failed {}", capture.recordId, exception);
-            } finally {
-                captureInFlight = false;
+    private static void removePublishedFile(Path target, Object expectedFileKey) {
+        if (target == null) return;
+        try {
+            BasicFileAttributes attributes = Files.readAttributes(
+                    target, BasicFileAttributes.class, LinkOption.NOFOLLOW_LINKS);
+            if (!attributes.isSymbolicLink()
+                    && (expectedFileKey == null || expectedFileKey.equals(attributes.fileKey()))) {
+                Files.deleteIfExists(target);
             }
-        });
+        } catch (java.nio.file.NoSuchFileException ignored) {
+            // The record deletion or another cleanup already removed the image.
+        } catch (Exception exception) {
+            LOGGER.warn("Could not remove unreferenced death screenshot {}", target, exception);
+        }
+    }
+
+    private static void fail(MinecraftClient client, PendingCapture capture, String error) {
+        try {
+            ClientIoExecutor.INSTANCE.execute(() -> {
+                try {
+                    capture.repository.markScreenshotFailed(capture.recordId, error);
+                } catch (RuntimeException exception) {
+                    LOGGER.error("Could not mark death screenshot failed {}", capture.recordId, exception);
+                } finally {
+                    client.execute(() -> captureInFlight = false);
+                }
+            });
+        } catch (RuntimeException exception) {
+            LOGGER.error("Could not queue death screenshot failure {}", capture.recordId, exception);
+            captureInFlight = false;
+        }
+    }
+
+    private static void publish(Path images, Path realImages, Path temporary, Path target) throws Exception {
+        if (Files.isSymbolicLink(images) || !Files.isDirectory(images, LinkOption.NOFOLLOW_LINKS)
+                || !images.toRealPath().equals(realImages)) {
+            throw new IllegalArgumentException("Death image directory changed during screenshot write");
+        }
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(realImages)) {
+            if (stream instanceof SecureDirectoryStream<Path> secure) {
+                Path targetName = target.getFileName();
+                BasicFileAttributeView attributes = secure.getFileAttributeView(
+                        targetName, BasicFileAttributeView.class, LinkOption.NOFOLLOW_LINKS);
+                try {
+                    if (attributes.readAttributes().isSymbolicLink()) {
+                        throw new IllegalArgumentException("Death screenshot target must not be a symbolic link");
+                    }
+                } catch (java.nio.file.NoSuchFileException ignored) {
+                    // No previous screenshot to validate before the atomic move.
+                }
+                secure.move(temporary.getFileName(), secure, targetName);
+                return;
+            }
+        }
+        if (Files.exists(target, LinkOption.NOFOLLOW_LINKS)) {
+            throw new java.nio.file.FileAlreadyExistsException(target.toString());
+        }
+        try {
+            Files.move(temporary, target, StandardCopyOption.ATOMIC_MOVE);
+        } catch (java.nio.file.AtomicMoveNotSupportedException ignored) {
+            // No REPLACE_EXISTING: a raced file or symlink makes publication fail safely.
+            Files.move(temporary, target);
+        }
     }
 
     private static String message(Throwable throwable) {

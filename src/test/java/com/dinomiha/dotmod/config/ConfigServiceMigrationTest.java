@@ -45,4 +45,18 @@ class ConfigServiceMigrationTest {
         assertEquals(futureConfig, Files.readString(paths.configFile()));
         assertFalse(Files.exists(paths.configFile().resolveSibling("config.json.broken")));
     }
+
+    @Test
+    void olderSchemaIsNormalizedAndPersistedDuringLoad() throws Exception {
+        StoragePaths paths = new StoragePaths(tempDirectory);
+        Files.createDirectories(paths.root());
+        Files.writeString(paths.configFile(), "{\"schemaVersion\":6,\"general\":{\"enabled\":false}}");
+
+        ConfigService service = new ConfigService(paths);
+
+        assertFalse(service.config().general.enabled);
+        String persisted = Files.readString(paths.configFile());
+        assertTrue(persisted.contains("\"schemaVersion\": " + DotModConfig.CURRENT_SCHEMA_VERSION));
+        assertTrue(Files.exists(paths.configFile().resolveSibling("config.json.bak")));
+    }
 }

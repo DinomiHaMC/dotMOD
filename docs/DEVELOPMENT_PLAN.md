@@ -15,7 +15,10 @@ not committed when the audit started.
 | Stage 4 - Preset Helper | Complete |
 | Stage 5 - HUD Widgets and Durability | Complete |
 | Stage 6 - Inventory Search | Complete |
-| Stages 7-10 | Not started |
+| Stage 7 - Commands and Aliases | Complete |
+| Stage 8 - Death History and Screenshot+ | Complete |
+| Stage 9 - Toggle Walk and Freelook | Complete |
+| Stage 10 - Completion | Complete |
 
 The source-layout section below is the Stage 0 baseline. The current post-Stage
 1 architecture is documented in [`ARCHITECTURE.md`](ARCHITECTURE.md).
@@ -683,6 +686,8 @@ Suggested commit: `feat: add toggle walk and freelook`
 
 ### Stage 10 - Completion
 
+Status: **Complete**
+
 Goals:
 
 - Run regression, compatibility, localization, migration, and performance checks.
@@ -710,6 +715,9 @@ Exit criteria:
   server type; untested combinations are documented rather than promised.
 
 Suggested commit: `docs: finalize dotMOD release documentation`
+
+Automated results and the explicitly limited manual compatibility record are in
+[`STAGE10_RESULTS.md`](STAGE10_RESULTS.md).
 
 ## Verification Policy
 

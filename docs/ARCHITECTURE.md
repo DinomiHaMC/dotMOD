@@ -127,9 +127,10 @@ screenshot work can begin.
 `DeathScreenshotQueue` stores the record UUID plus expected network and world
 identity. The `MinecraftClient.render` mixin runs immediately after
 `GameRenderer.render`, starts at most one capture per frame, and hands the
-`NativeImage` to the client IO executor. PNG writing is constrained to
-`deaths/images/<uuid>.png`; the image is always closed and the saved/failed
-repository update returns to the client executor. Records survive capture
+`NativeImage` to the client IO executor. PNG writing is constrained to the
+record-owned `deaths/images/<uuid>.png` path and is published without replacing
+an existing file or symbolic link. The image is always closed, and both PNG and
+repository status persistence stay on the IO executor. Records survive capture
 failures.
 
 Image viewing loads and validates a non-symlink PNG off-thread, registers its
@@ -189,6 +190,15 @@ perspective still being the one dotMOD selected.
 
 Movement and Freelook indicators are ordinary registered custom HUD widgets.
 They perform no IO, hide while idle, and remain visible in editor preview mode.
+
+## Release Verification
+
+`verifyReleaseJar` is part of Gradle `check`. It opens the remapped artifact and
+verifies required metadata, mixin, localization, and license entries, rejects
+unexpanded metadata placeholders, and checks the supported client/version
+contract. GitHub Actions runs the clean Java 21 build and uploads the exact
+release JAR plus its SHA-256 file. Runtime platform/server coverage remains a
+separate manual record and is never inferred from CI.
 
 ## InvSeeMenu
 

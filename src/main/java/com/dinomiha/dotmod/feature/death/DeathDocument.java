@@ -10,6 +10,7 @@ import com.dinomiha.dotmod.feature.invsee.persistence.VirtualInventorySerializer
 import com.dinomiha.dotmod.storage.UnsupportedDataVersionException;
 import net.minecraft.registry.RegistryWrapper;
 
+import java.nio.file.Path;
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -86,6 +87,11 @@ public final class DeathDocument {
             throw new DeathException(DeathError.INVALID_DATA, "Death record snapshot is incomplete");
         }
         try {
+            UUID recordId = UUID.fromString(id);
+            if (ScreenshotStatus.SAVED.name().equals(screenshotStatus)
+                    && !Path.of("images", recordId + ".png").toString().replace('\\', '/').equals(screenshotPath)) {
+                throw new DeathException(DeathError.INVALID_DATA, "Screenshot path does not belong to this death record");
+            }
             UUID attacker = attackerId == null ? null : UUID.fromString(attackerId);
             List<DeathEffect> decodedEffects = effects.stream().map(EffectDocument::toEffect).toList();
             DeathSnapshot snapshot = new DeathSnapshot(
@@ -98,7 +104,7 @@ public final class DeathDocument {
             DeathScreenshot screenshot = new DeathScreenshot(
                     ScreenshotStatus.valueOf(screenshotStatus), screenshotPath, screenshotError
             );
-            return new DeathRecord(UUID.fromString(id), Instant.parse(diedAt), snapshot, screenshot);
+            return new DeathRecord(recordId, Instant.parse(diedAt), snapshot, screenshot);
         } catch (DeathException exception) {
             throw exception;
         } catch (RuntimeException exception) {

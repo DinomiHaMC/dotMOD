@@ -151,9 +151,9 @@ ISM is a standalone local virtual-inventory screen. It never uses a
 
 | Mode | Command | Behavior |
 | --- | --- | --- |
-| `П` View | `/dot ism view` | Frozen read-only snapshot of the current inventory |
-| `Р` Editor | `/dot ism edit` | Edit a local copy of the current inventory |
-| `К` Creative editor | `/dot ism creative` | Edit the local draft using the client item catalog |
+| `V` View | `/dot ism view` | Frozen read-only snapshot of the current inventory |
+| `E` Editor | `/dot ism edit` | Edit a local copy of the current inventory |
+| `C` Creative editor | `/dot ism creative` | Edit the local draft using the client item catalog |
 
 The editor supports local cursor movement, swapping and merging stacks,
 right-click splitting, deletion, strict amount editing, rollback, tooltips,

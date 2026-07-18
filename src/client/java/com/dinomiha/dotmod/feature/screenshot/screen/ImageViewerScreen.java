@@ -26,6 +26,9 @@ public final class ImageViewerScreen extends Screen {
     private int imageWidth;
     private int imageHeight;
     private Text status = Text.translatable("screen.dotmod.image.loading");
+    private boolean loadInFlight;
+    private int generation;
+    private int loadStartedGeneration = -1;
 
     public ImageViewerScreen(Screen parent, Path imageRoot, Path imagePath) {
         super(Text.translatable("screen.dotmod.image.title"));
@@ -38,11 +41,14 @@ public final class ImageViewerScreen extends Screen {
     @Override
     protected void init() {
         addDrawableChild(DotButton.create(width / 2 - 50, height - 28, 100, Text.translatable("gui.back"), button -> close()));
-        if (texture == null) {
+        if (texture == null && !loadInFlight && loadStartedGeneration != generation) {
+            loadInFlight = true;
+            loadStartedGeneration = generation;
+            int loadGeneration = generation;
             CompletableFuture.supplyAsync(this::loadImage, ClientIoExecutor.INSTANCE)
-                    .thenAccept(image -> client.execute(() -> register(image)))
+                    .thenAccept(image -> client.execute(() -> register(image, loadGeneration)))
                     .exceptionally(exception -> {
-                        client.execute(() -> status = Text.translatable("screen.dotmod.image.failed"));
+                        client.execute(() -> failLoad(loadGeneration));
                         return null;
                     });
         }
@@ -59,17 +65,25 @@ public final class ImageViewerScreen extends Screen {
         }
     }
 
-    private void register(NativeImage image) {
-        if (client.currentScreen != this) {
+    private void register(NativeImage image, int loadGeneration) {
+        if (loadGeneration != generation || client.currentScreen != this) {
             image.close();
             return;
         }
+        loadInFlight = false;
         imageWidth = image.getWidth();
         imageHeight = image.getHeight();
         texture = new NativeImageBackedTexture(() -> "dotMOD death image", image);
         client.getTextureManager().registerTexture(textureId, texture);
         texture.upload();
         status = Text.empty();
+    }
+
+    private void failLoad(int loadGeneration) {
+        if (loadGeneration == generation) {
+            loadInFlight = false;
+            status = Text.translatable("screen.dotmod.image.failed");
+        }
     }
 
     @Override
@@ -94,6 +108,8 @@ public final class ImageViewerScreen extends Screen {
 
     @Override
     public void removed() {
+        generation++;
+        loadInFlight = false;
         if (texture != null) {
             client.getTextureManager().destroyTexture(textureId);
             texture = null;

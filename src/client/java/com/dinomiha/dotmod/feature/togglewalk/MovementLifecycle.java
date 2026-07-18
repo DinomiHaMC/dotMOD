@@ -159,6 +159,9 @@ public final class MovementLifecycle {
 
     private static boolean apply(MinecraftClient client, KeyBinding binding, boolean owned, boolean force, boolean restorePhysical) {
         if (force) {
+            if (owned && binding instanceof StickyKeyBinding sticky) {
+                sticky.shouldRestoreOnScreenClose();
+            }
             if (!binding.isPressed()) {
                 setPressed(binding, true);
                 return true;
@@ -167,12 +170,18 @@ public final class MovementLifecycle {
         }
         if (owned) {
             setPressed(binding, restorePhysical && physicallyPressed(client, binding));
+            if (binding instanceof StickyKeyBinding sticky) {
+                sticky.shouldRestoreOnScreenClose();
+            }
         }
         return false;
     }
 
     private static void setPressed(KeyBinding binding, boolean pressed) {
         if (binding instanceof StickyKeyBinding) {
+            // False is effective in hold mode and harmless in toggle mode. The
+            // conditional true then converges in either mode, including a mode switch.
+            binding.setPressed(false);
             if (binding.isPressed() != pressed) {
                 binding.setPressed(true);
             }

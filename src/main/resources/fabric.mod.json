@@ -7,7 +7,11 @@
   "authors": [
     "DinoMiHa"
   ],
-  "contact": {},
+  "contact": {
+    "homepage": "https://modrinth.com/mod/dotmod",
+    "sources": "https://github.com/DinomiHaMC/dotMOD",
+    "issues": "https://github.com/DinomiHaMC/dotMOD/issues"
+  },
   "license": "GPL-3.0-only",
   "icon": "assets/dotmod/icon.png",
   "environment": "client",

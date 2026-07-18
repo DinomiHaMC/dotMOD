@@ -289,3 +289,14 @@ client or platform environment.
   Paper/Spigot, and Realms where access is available.
 - Record the exact client/server/mod versions and never claim an untested
   platform result.
+
+## Stage 10 Release Gate
+
+Run `./gradlew --no-daemon clean test build`. Gradle also runs
+`verifyReleaseJar`, which validates the remapped JAR metadata and required
+entries. Then run `git diff --check` and record the artifact SHA-256.
+
+Automated checks do not establish in-game compatibility. The available and
+unavailable platform/server combinations for this release are recorded in
+[`STAGE10_RESULTS.md`](STAGE10_RESULTS.md); untested entries remain explicitly
+marked rather than being treated as passes.

@@ -7,6 +7,7 @@ import com.dinomiha.dotmod.storage.PlayerColorData;
 import com.dinomiha.dotmod.storage.StoragePaths;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
 import net.fabricmc.loader.api.FabricLoader;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,9 +53,11 @@ public final class ConfigService {
             this.config = new DotModConfig();
             this.config.validate();
         } else {
+            Integer loadedSchema = readConfigSchema();
             AtomicJsonStore.LoadResult<DotModConfig> result = configStore.load();
             this.config = result.value();
             this.configWriteBlocked = result.writeBlocked();
+            persistNormalizedConfig(loadedSchema, result);
         }
         createDataDirectories();
     }
@@ -111,10 +114,12 @@ public final class ConfigService {
             }
             migrationBlocked = false;
         }
+        Integer loadedSchema = readConfigSchema();
         AtomicJsonStore.LoadResult<DotModConfig> result = configStore.load();
         config.replaceWith(result.value());
         configWriteBlocked = result.writeBlocked();
-        return !result.recovered() && !result.writeBlocked();
+        persistNormalizedConfig(loadedSchema, result);
+        return !result.recovered() && !configWriteBlocked;
     }
 
     public boolean resetHud() {
@@ -164,6 +169,25 @@ public final class ConfigService {
             Files.createDirectories(paths.deathsDirectory());
         } catch (IOException exception) {
             LOGGER.error("Failed to create dotMOD data directories", exception);
+        }
+    }
+
+    private Integer readConfigSchema() {
+        if (!Files.isRegularFile(paths.configFile())) return null;
+        try (var reader = Files.newBufferedReader(paths.configFile())) {
+            var element = JsonParser.parseReader(reader);
+            if (!element.isJsonObject() || !element.getAsJsonObject().has("schemaVersion")) return 0;
+            return element.getAsJsonObject().get("schemaVersion").getAsInt();
+        } catch (IOException | RuntimeException ignored) {
+            return null;
+        }
+    }
+
+    private void persistNormalizedConfig(Integer loadedSchema, AtomicJsonStore.LoadResult<DotModConfig> result) {
+        if (loadedSchema != null && loadedSchema < DotModConfig.CURRENT_SCHEMA_VERSION
+                && !result.recovered() && !result.writeBlocked() && !configStore.save(config)) {
+            configWriteBlocked = true;
+            LOGGER.error("Could not persist normalized dotMOD config");
         }
     }
 

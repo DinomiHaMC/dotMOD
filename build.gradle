@@ -3,6 +3,9 @@ plugins {
     id "maven-publish"
 }
 
+import groovy.json.JsonSlurper
+import java.util.zip.ZipFile
+
 version = project.mod_version
 group = project.maven_group
 
@@ -94,4 +97,45 @@ jar {
     from("LICENSE") {
         rename { "${it}_${licenseArchiveName}" }
     }
+}
+
+tasks.register("verifyReleaseJar") {
+    dependsOn tasks.named("remapJar")
+    group = "verification"
+    description = "Validates the remapped release artifact and embedded metadata."
+
+    doLast {
+        File artifact = tasks.named("remapJar").get().archiveFile.get().asFile
+        if (!artifact.isFile()) {
+            throw new GradleException("Missing remapped release JAR: ${artifact}")
+        }
+        new ZipFile(artifact).withCloseable { zip ->
+            [
+                    "fabric.mod.json",
+                    "dotmod.client.mixins.json",
+                    "assets/dotmod/lang/en_us.json",
+                    "assets/dotmod/lang/ru_ru.json",
+                    "LICENSE_dotmod"
+            ].each { entry ->
+                if (zip.getEntry(entry) == null) {
+                    throw new GradleException("Release JAR is missing ${entry}")
+                }
+            }
+            String metadataText = zip.getInputStream(zip.getEntry("fabric.mod.json")).getText("UTF-8")
+            if (metadataText.contains('${')) {
+                throw new GradleException("fabric.mod.json contains an unresolved placeholder")
+            }
+            def metadata = new JsonSlurper().parseText(metadataText)
+            if (metadata.id != "dotmod" || metadata.version != project.version.toString()
+                    || metadata.environment != "client" || metadata.license != "GPL-3.0-only"
+                    || metadata.depends.minecraft != "=${project.minecraft_version}"
+                    || metadata.depends.java != ">=21") {
+                throw new GradleException("Release metadata does not match the supported build")
+            }
+        }
+    }
+}
+
+tasks.named("check") {
+    dependsOn tasks.named("verifyReleaseJar")
 }

@@ -89,6 +89,7 @@ public final class FreelookController {
             return;
         }
         rememberOwners(client);
+        relinquishPerspectiveIfChanged(client);
 
         if (config.freelook.activation == FreelookActivation.HOLD) {
             if (activationKey.isPressed() && state != RuntimeState.ACTIVE) activate(client);
@@ -113,7 +114,7 @@ public final class FreelookController {
         returnAnimation = null;
         state = RuntimeState.ACTIVE;
         var config = ConfigService.get().config().freelook;
-        if (config.perspective == FreelookPerspective.SWITCH_TO_THIRD_PERSON_BACK) {
+        if (config.perspective == FreelookPerspective.SWITCH_TO_THIRD_PERSON_BACK && !ownsPerspective) {
             previousPerspective = client.options.getPerspective();
             if (previousPerspective != Perspective.THIRD_PERSON_BACK) {
                 client.options.setPerspective(Perspective.THIRD_PERSON_BACK);
@@ -123,11 +124,14 @@ public final class FreelookController {
     }
 
     private void release(MinecraftClient client) {
-        restorePerspective(client);
         int duration = ConfigService.get().config().freelook.returnDurationMs;
         returnAnimation = new CameraReturnAnimation(camera.yawOffset(), camera.pitchOffset(), System.nanoTime(), duration);
         state = duration == 0 ? RuntimeState.IDLE : RuntimeState.RETURNING;
-        if (state == RuntimeState.IDLE) camera.reset();
+        if (state == RuntimeState.IDLE) {
+            camera.reset();
+            returnAnimation = null;
+            restorePerspective(client);
+        }
     }
 
     private void animate() {
@@ -138,14 +142,24 @@ public final class FreelookController {
             camera.reset();
             returnAnimation = null;
             state = RuntimeState.IDLE;
+            restorePerspective(MinecraftClient.getInstance());
         }
     }
 
     private void hardReset(MinecraftClient client) {
+        drainActivationPresses();
         restorePerspective(client);
         camera.reset();
         returnAnimation = null;
         state = RuntimeState.IDLE;
+    }
+
+    private void drainActivationPresses() {
+        if (activationKey != null) {
+            while (activationKey.wasPressed()) {
+                // Invalid contexts must not queue an activation for gameplay.
+            }
+        }
     }
 
     private void restorePerspective(MinecraftClient client) {
@@ -154,6 +168,17 @@ public final class FreelookController {
         }
         ownsPerspective = false;
         previousPerspective = null;
+    }
+
+    private void relinquishPerspectiveIfChanged(MinecraftClient client) {
+        if (!ownsPerspective || client.options.getPerspective() == Perspective.THIRD_PERSON_BACK) return;
+        ownsPerspective = false;
+        previousPerspective = null;
+        if (state == RuntimeState.RETURNING) {
+            camera.reset();
+            returnAnimation = null;
+            state = RuntimeState.IDLE;
+        }
     }
 
     private void rememberOwners(MinecraftClient client) {

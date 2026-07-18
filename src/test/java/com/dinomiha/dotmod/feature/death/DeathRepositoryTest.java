@@ -8,6 +8,7 @@ import com.dinomiha.dotmod.feature.invsee.MinecraftTestBootstrap;
 import com.dinomiha.dotmod.feature.invsee.VirtualInventory;
 import com.dinomiha.dotmod.feature.invsee.VirtualInventorySnapshot;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonParser;
 import net.minecraft.component.DataComponentTypes;
 import net.minecraft.item.ItemStack;
 import net.minecraft.item.Items;
@@ -81,8 +82,8 @@ class DeathRepositoryTest {
         assertEquals("Framebuffer unavailable", repository.get(FIRST_ID).orElseThrow().screenshot().error());
         assertEquals(1, repository.list().size());
 
-        DeathRecord saved = repository.markScreenshotSaved(FIRST_ID, Path.of("screenshots", "death.png"));
-        assertEquals("screenshots/death.png", saved.screenshot().relativePath());
+        DeathRecord saved = repository.markScreenshotSaved(FIRST_ID, Path.of("images", FIRST_ID + ".png"));
+        assertEquals("images/" + FIRST_ID + ".png", saved.screenshot().relativePath());
         assertEquals(ScreenshotStatus.SAVED, repository.get(FIRST_ID).orElseThrow().screenshot().status());
     }
 
@@ -105,6 +106,25 @@ class DeathRepositoryTest {
                 DeathException.class,
                 () -> repository.markScreenshotSaved(FIRST_ID, Path.of("escape", "outside.png"))
         ).error());
+    }
+
+    @Test
+    void maliciousSavedScreenshotPathCannotMoveAnotherRecord() throws Exception {
+        DeathRepository repository = repository(FIRST_ID, SECOND_ID);
+        repository.create(snapshot());
+        repository.create(snapshot());
+        Path first = tempDirectory.resolve(FIRST_ID + ".json");
+        Path second = tempDirectory.resolve(SECOND_ID + ".json");
+        var document = JsonParser.parseString(Files.readString(first)).getAsJsonObject();
+        document.addProperty("screenshotStatus", "SAVED");
+        document.addProperty("screenshotPath", SECOND_ID + ".json");
+        Files.writeString(first, new GsonBuilder().setPrettyPrinting().create().toJson(document));
+        String protectedRecord = Files.readString(second);
+
+        assertTrue(repository.get(FIRST_ID).isEmpty());
+        assertEquals(DeathError.NOT_FOUND,
+                assertThrows(DeathException.class, () -> repository.deleteToTrash(FIRST_ID)).error());
+        assertEquals(protectedRecord, Files.readString(second));
     }
 
     @Test
