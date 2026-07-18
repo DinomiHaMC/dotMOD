@@ -91,7 +91,7 @@ class ConfigValidatorTest {
         assertEquals(-42, hearts.offsetY);
         assertTrue(migrated.durability.enabled);
         assertTrue(migrated.hud.widgets.containsKey("addon.legacy"));
-        assertEquals(7, migrated.schemaVersion);
+        assertEquals(8, migrated.schemaVersion);
     }
 
     @Test
@@ -173,5 +173,40 @@ class ConfigValidatorTest {
         assertTrue(migrated.freelook.enabled);
         assertFalse(current.toggleWalk.enabled);
         assertFalse(current.freelook.enabled);
+    }
+
+    @Test
+    void schemaEightEnablesFullBrightnessAndEnforcesFreelookPerspectiveMigration() {
+        Gson gson = new Gson();
+        DotModConfig migrated = gson.fromJson(
+                "{\"schemaVersion\":7,\"fullBrightness\":{\"enabled\":false},\"freelook\":{\"perspective\":\"PRESERVE\"}}",
+                DotModConfig.class
+        );
+        DotModConfig current = gson.fromJson(
+                "{\"schemaVersion\":8,\"fullBrightness\":{\"enabled\":false}}",
+                DotModConfig.class
+        );
+
+        migrated.validate();
+        current.validate();
+
+        assertTrue(migrated.fullBrightness.enabled);
+        assertEquals(FreelookPerspective.SWITCH_TO_THIRD_PERSON_BACK, migrated.freelook.perspective);
+        assertFalse(current.fullBrightness.enabled);
+    }
+
+    @Test
+    void schemaEightPreservesMovementWidgetCenterAfterWidthIncrease() {
+        Gson gson = new Gson();
+        DotModConfig migrated = gson.fromJson(
+                "{\"schemaVersion\":7,\"hud\":{\"widgets\":{\"dotmod.movement\":{"
+                        + "\"visible\":true,\"anchor\":\"BOTTOM_CENTER\",\"offsetX\":10,\"offsetY\":-62,"
+                        + "\"scale\":1.0,\"alpha\":1.0}}}}",
+                DotModConfig.class
+        );
+
+        migrated.validate();
+
+        assertEquals(-50, migrated.hud.widgets.get("dotmod.movement").offsetX);
     }
 }

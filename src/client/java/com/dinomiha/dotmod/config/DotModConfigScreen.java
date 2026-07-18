@@ -273,6 +273,12 @@ public final class DotModConfigScreen {
                 .setSaveConsumer(value -> config.toggleWalk.toggleShift.enabled = value)
                 .build());
 
+        ConfigCategory fullBrightness = builder.getOrCreateCategory(Text.translatable("config.dotmod.category.full_brightness"));
+        fullBrightness.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.full_brightness.enabled"), config.fullBrightness.enabled)
+                .setTooltip(Text.translatable("config.dotmod.full_brightness.enabled.tooltip"))
+                .setSaveConsumer(value -> config.fullBrightness.enabled = value)
+                .build());
+
         ConfigCategory freelook = builder.getOrCreateCategory(Text.translatable("config.dotmod.category.freelook"));
         freelook.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.freelook.enabled"), config.freelook.enabled)
                 .setTooltip(Text.translatable("config.dotmod.freelook.enabled.tooltip"))
@@ -281,10 +287,6 @@ public final class DotModConfigScreen {
                         com.dinomiha.dotmod.config.FreelookActivation.class, config.freelook.activation)
                 .setEnumNameProvider(value -> Text.translatable("config.dotmod.freelook.activation." + value.name().toLowerCase(Locale.ROOT)))
                 .setSaveConsumer(value -> config.freelook.activation = value).build());
-        freelook.addEntry(entries.startEnumSelector(Text.translatable("config.dotmod.freelook.perspective"),
-                        com.dinomiha.dotmod.config.FreelookPerspective.class, config.freelook.perspective)
-                .setEnumNameProvider(value -> Text.translatable("config.dotmod.freelook.perspective." + value.name().toLowerCase(Locale.ROOT)))
-                .setSaveConsumer(value -> config.freelook.perspective = value).build());
         freelook.addEntry(entries.startFloatField(Text.translatable("config.dotmod.freelook.sensitivity"), config.freelook.sensitivity)
                 .setMin(0.1F).setMax(4.0F).setSaveConsumer(value -> config.freelook.sensitivity = value).build());
         freelook.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.freelook.invert_x"), config.freelook.invertX)
@@ -306,6 +308,7 @@ public final class DotModConfigScreen {
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.toggle_walk")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.emergency_release")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.freelook")).build());
+        keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.full_brightness")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.preset_helper")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.fast_commands")).build());
         keybinds.addEntry(entries.startTextDescription(Text.translatable("config.dotmod.keybinds.controls_hint")).build());

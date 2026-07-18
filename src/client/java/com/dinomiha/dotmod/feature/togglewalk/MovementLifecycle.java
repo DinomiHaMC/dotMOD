@@ -30,6 +30,7 @@ public final class MovementLifecycle {
     private Object ownerConnection;
     private boolean ownsForward;
     private boolean ownsSprint;
+    private boolean ownsJump;
     private boolean ownsSneak;
 
     private MovementLifecycle() {
@@ -91,7 +92,7 @@ public final class MovementLifecycle {
         ownerConnection = connection;
 
         DotModConfig config = ConfigService.get().config();
-        if (!config.toggleWalk.enabled && controller.snapshot().walking())
+        if (!config.toggleWalk.enabled && controller.snapshot().movementActive())
             controller.deactivateWalk(MovementReleaseReason.DISABLED);
         if (!config.toggleWalk.toggleShift.enabled && controller.snapshot().sneaking())
             controller.deactivateSneak(MovementReleaseReason.DISABLED);
@@ -99,7 +100,7 @@ public final class MovementLifecycle {
         boolean userChanged = false;
         while (toggleWalk.wasPressed()) {
             if (ConfigService.get().config().toggleWalk.enabled) {
-                controller.toggleWalk(context);
+                controller.toggleWalk(context, captureMovement(client));
                 userChanged = true;
             }
         }
@@ -154,7 +155,17 @@ public final class MovementLifecycle {
     private void apply(MinecraftClient client, ForcedKeyState state, boolean restorePhysical) {
         ownsForward = apply(client, client.options.forwardKey, ownsForward, state.forward(), restorePhysical);
         ownsSprint = apply(client, client.options.sprintKey, ownsSprint, state.sprint(), restorePhysical);
+        ownsJump = apply(client, client.options.jumpKey, ownsJump, state.jump(), restorePhysical);
         ownsSneak = apply(client, client.options.sneakKey, ownsSneak, state.sneak(), restorePhysical);
+    }
+
+    private static ForcedKeyState captureMovement(MinecraftClient client) {
+        return new ForcedKeyState(
+                physicallyPressed(client, client.options.forwardKey),
+                physicallyPressed(client, client.options.sprintKey),
+                physicallyPressed(client, client.options.jumpKey),
+                false
+        );
     }
 
     private static boolean apply(MinecraftClient client, KeyBinding binding, boolean owned, boolean force, boolean restorePhysical) {

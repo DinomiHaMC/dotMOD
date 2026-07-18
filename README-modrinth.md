@@ -13,8 +13,9 @@ server plugin, custom protocol, or server-side dotMOD installation.
 - Parsed inventory search with item, lore, enchantment, count, and durability filters.
 - Fast local command history, aliases, recolor tools, and `/dot` commands.
 - Death History with inventory/effect snapshots and optional deferred screenshots.
-- Toggle Walk/Shift, sprint retention, emergency release, and lifecycle safety.
-- Hold/toggle Freelook that changes the camera without changing player rotation.
+- Toggle Walk/Shift with captured forward/sprint/jump combinations and safe release.
+- Hold/toggle Freelook with enforced third-person orbit and exact restoration.
+- Local Full Brightness toggle with Video Settings suspension and gamma restoration.
 
 All user-facing configuration and messages are available in English and Russian.
 Configuration and versioned feature data are stored below `config/dotmod/` with
@@ -22,7 +23,7 @@ atomic writes, backups, recovery, and future-schema write protection.
 
 ## Safety Boundaries
 
-- ISM, search, HUD, helper, death history, and Freelook are local-only.
+- ISM, search, HUD, helper, death history, Freelook, and Full Brightness are local-only.
 - Quick Craft and preset rearrangement use normal synchronized vanilla clicks.
 - Freelook does not mutate player yaw/pitch or add look packets.
 - Desktop image actions use argument arrays, never shell command strings.

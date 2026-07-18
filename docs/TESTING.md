@@ -269,17 +269,20 @@ client or platform environment.
   world is marked failed without affecting the new world.
 - Verify ordinary F2 screenshots remain vanilla and unaffected.
 
-### Toggle Walk And Freelook
+### Toggle Walk, Freelook, And Full Brightness
 
-- Automated coverage verifies movement activation/release and sprint arming,
+- Automated coverage verifies movement capture/default/release and sprint arming,
   relative camera offsets, wrapping, pitch clamping, sensitivity/inversion,
   finite-input rejection, smoothstep monotonicity, zero-duration return,
-  schema-7 migration/default behavior, and English/Russian key parity.
-- Test rebound movement/sprint keys, Hold/Toggle accessibility modes, chat,
+  gamma ownership/suspension, schema-8 migration, and translation key parity.
+- Test rebound keyboard/mouse forward, sprint, and jump combinations, including
+  SPACE-only, Hold/Toggle accessibility modes, chat,
   menus, death, disconnect, emergency stop, and HUD indicators.
 - Test Freelook hold/toggle, first/third person, pitch bounds, inversions,
-  sensitivity, smooth return, movement direction, server-visible rotation, and
-  compatibility with the current camera/render mixins.
+  sensitivity, third-person return timing, manual F5 ownership, movement
+  direction, server-visible rotation, and camera/render mixin compatibility.
+- Toggle Full Brightness at multiple gamma values; edit gamma in Video Settings,
+  then test global/feature disable, disconnect, and shutdown restoration.
 - The Stage 9 build gates are `compileClientJava`, `clean build`, and
   `git diff --check`; runtime packet and camera compatibility remain manual.
 

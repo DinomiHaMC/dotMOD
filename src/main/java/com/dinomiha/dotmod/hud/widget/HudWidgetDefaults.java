@@ -33,7 +33,7 @@ public final class HudWidgetDefaults {
             definition(ARMOR, "hud.dotmod.widget.armor", 72, 18, true, HudAnchor.BOTTOM_LEFT, 8, -26, true),
             definition(COLORED_ONLINE, "hud.dotmod.widget.colored_online", 140, 84, true, HudAnchor.TOP_LEFT, 8, 8, true),
             definition(DURABILITY, "hud.dotmod.widget.durability", 126, 40, true, HudAnchor.BOTTOM_RIGHT, -134, -70, true),
-            definition(MOVEMENT, "hud.dotmod.widget.movement", 100, 10, true, HudAnchor.BOTTOM_CENTER, -50, -62, true),
+            definition(MOVEMENT, "hud.dotmod.widget.movement", 220, 10, true, HudAnchor.BOTTOM_CENTER, -110, -62, true),
             definition(FREELOOK, "hud.dotmod.widget.freelook", 100, 10, true, HudAnchor.CENTER, -50, 26, true)
     );
     private static final Map<String, HudWidgetDefinition> BY_ID;

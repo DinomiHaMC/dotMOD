@@ -57,12 +57,12 @@ uninitialized configuration.
 
 ## Configuration
 
-`DotModConfig` has schema version `7` and these top-level categories:
+`DotModConfig` has schema version `8` and these top-level categories:
 
 ```text
 general, commands, hud, quickCraft, inventoryPresets, inventorySearch,
-durability, screenshots, deathHistory, toggleWalk, freelook, playerColors,
-commandAliases, keybinds, interface
+durability, screenshots, deathHistory, toggleWalk, freelook, fullBrightness,
+playerColors, commandAliases, keybinds, interface
 ```
 
 `quickCraft` remains explicit because it is an existing independent feature.
@@ -80,6 +80,10 @@ perspective, sensitivity, inversion, return, and indicator settings. It enables
 Toggle Walk and Freelook during migration while preserving explicit schema-7
 feature choices. Movement and camera active bits are never serialized, and the
 legacy Toggle Shift active bit is ignored.
+
+Schema 8 adds enabled-by-default `fullBrightness`. Earlier schemas also migrate
+Freelook to mandatory third-person-back activation; the legacy perspective enum
+remains deserializable but is no longer exposed or used to disable the policy.
 
 The legacy flat `config/dotmod.json` migration maps every existing field into
 the categorized model and moves UUID colors into their own document. Migration
@@ -174,19 +178,26 @@ overlay message.
 ## Movement And Freelook
 
 `ToggleWalkController`, `ForcedKeyState`, and movement snapshots are pure state.
-The client `MovementLifecycle` is the only owner of forward, sprint, and sneak
-bindings it actually changes. It restores ordinary physical input only after a
-user toggle-off and hard-releases on configured screens, focus/death/identity
-boundaries, disconnect, shutdown, or the emergency key. It never calls the
-global `KeyBinding.unpressAll` or mutates player sprint state.
+Activation is independent from forward so captured forward/sprint/jump
+combinations include SPACE-only. The client `MovementLifecycle` polls rebound
+keyboard or mouse bindings before forcing and owns only forward, sprint, jump,
+and sneak bindings it changes. User release restores physical input; lifecycle
+boundaries hard-release. It never calls `KeyBinding.unpressAll` or mutates
+player sprint state.
 
 Freelook keeps relative yaw/pitch offsets in `FreelookCameraState` and uses a
 smoothstep `CameraReturnAnimation`. `MouseMixin` wraps the processed local look
 call while active, and `CameraMixin` substitutes effective camera yaw/pitch for
 orbit and clipping. Player rotation and packets are untouched. The client owner
 hard-resets on screen, focus, cursor, player/world/handler/camera, death, and
-configuration boundaries. Perspective restoration is conditional on the
-perspective still being the one dotMOD selected.
+configuration boundaries. Activation always owns third-person back through the
+return animation and restores the exact prior perspective unless manual F5
+relinquishes ownership.
+
+`GammaOwnershipState` is the pure Full Brightness state model. Its client
+adapter owns `GameOptions#getGamma()` only at runtime, suspends and tracks the
+user value in `VideoOptionsScreen`, restores idempotently on disable/disconnect/
+shutdown, and never calls `GameOptions.write()`.
 
 Movement and Freelook indicators are ordinary registered custom HUD widgets.
 They perform no IO, hide while idle, and remain visible in editor preview mode.

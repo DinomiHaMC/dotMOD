@@ -11,6 +11,7 @@ import com.dinomiha.dotmod.feature.commandalias.CommandClientService;
 import com.dinomiha.dotmod.feature.commandalias.OutgoingCommandInterceptor;
 import com.dinomiha.dotmod.feature.death.DeathClientService;
 import com.dinomiha.dotmod.feature.freelook.FreelookController;
+import com.dinomiha.dotmod.feature.fullbrightness.FullBrightnessController;
 import com.dinomiha.dotmod.feature.togglewalk.MovementLifecycle;
 import com.dinomiha.dotmod.hud.widget.HudWidgetRegistry;
 import com.dinomiha.dotmod.keybind.DotModKeybinds;
@@ -38,6 +39,7 @@ public final class DotModClient implements ClientModInitializer {
         DotModKeybinds.register();
         MovementLifecycle.initialize();
         FreelookController.initialize();
+        FullBrightnessController.initialize();
         ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> {
             if (screen instanceof HandledScreen<?> handledScreen) {
                 HandledScreenAccessor accessor = (HandledScreenAccessor) handledScreen;

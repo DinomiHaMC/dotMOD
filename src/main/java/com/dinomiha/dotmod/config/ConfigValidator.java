@@ -3,6 +3,7 @@ package com.dinomiha.dotmod.config;
 import com.dinomiha.dotmod.hud.HudElement;
 import com.dinomiha.dotmod.hud.widget.HudWidgetDefaults;
 import com.dinomiha.dotmod.hud.widget.HudWidgetSettings;
+import com.dinomiha.dotmod.hud.widget.HudWidgetDefaults;
 import com.dinomiha.dotmod.storage.UnsupportedDataVersionException;
 
 import java.util.ArrayList;
@@ -46,6 +47,15 @@ public final class ConfigValidator {
         if (loadedSchema < 7) {
             config.toggleWalk.enabled = true;
             config.freelook.enabled = true;
+        }
+        config.fullBrightness = feature(config.fullBrightness);
+        if (loadedSchema < 8) {
+            config.fullBrightness.enabled = true;
+            config.freelook.perspective = FreelookPerspective.SWITCH_TO_THIRD_PERSON_BACK;
+            HudWidgetSettings movement = config.hud.widgets.get(HudWidgetDefaults.MOVEMENT);
+            if (movement != null) {
+                movement.offsetX -= 60;
+            }
         }
         config.playerColors = config.playerColors == null ? new PlayerColorsConfig() : config.playerColors;
         config.keybinds = config.keybinds == null ? new KeybindsConfig() : config.keybinds;
@@ -98,7 +108,7 @@ public final class ConfigValidator {
         config.freelook.activation = config.freelook.activation == null
                 ? FreelookActivation.HOLD : config.freelook.activation;
         config.freelook.perspective = config.freelook.perspective == null
-                ? FreelookPerspective.PRESERVE : config.freelook.perspective;
+                ? FreelookPerspective.SWITCH_TO_THIRD_PERSON_BACK : config.freelook.perspective;
         config.freelook.sensitivity = finite(config.freelook.sensitivity, 1.0F, 0.1F, 4.0F);
         config.freelook.returnDurationMs = clamp(config.freelook.returnDurationMs, 0, 1000);
         config.schemaVersion = DotModConfig.CURRENT_SCHEMA_VERSION;

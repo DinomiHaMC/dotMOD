@@ -19,6 +19,7 @@ not committed when the audit started.
 | Stage 8 - Death History and Screenshot+ | Complete |
 | Stage 9 - Toggle Walk and Freelook | Complete |
 | Stage 10 - Completion | Complete |
+| Post-stage movement, Freelook, and brightness addendum | Complete |
 
 The source-layout section below is the Stage 0 baseline. The current post-Stage
 1 architecture is documented in [`ARCHITECTURE.md`](ARCHITECTURE.md).
@@ -718,6 +719,15 @@ Suggested commit: `docs: finalize dotMOD release documentation`
 
 Automated results and the explicitly limited manual compatibility record are in
 [`STAGE10_RESULTS.md`](STAGE10_RESULTS.md).
+
+### Post-Stage Addendum
+
+Status: **Complete**
+
+Toggle Walk now captures rebound forward/sprint/jump combinations with jump
+ownership and release coverage. Freelook always owns third-person back through
+normal return. Schema 8 adds runtime-only Full Brightness with tested gamma
+ownership, Video Settings suspension, configuration, keybind, and localization.
 
 ## Verification Policy
 

@@ -2,8 +2,8 @@
 
 dotMOD is a client-side Fabric utility mod for Minecraft 1.21.11. It combines
 compact crafting controls, a draggable vanilla HUD editor, local player colors,
-uniform player name tags, Toggle Walk/Shift, and packet-free Freelook without
-requiring a server plugin or a server-side installation.
+uniform player name tags, captured Toggle Walk movement, Full Brightness, and
+packet-free Freelook without requiring a server plugin or server installation.
 
 - Current version: **2.0.0**
 - Author: **DinoMiHa**
@@ -121,10 +121,11 @@ hidden or otherwise unavailable players visible.
 
 ### Toggle Walk And Shift
 
-Toggle Walk forces the configured Minecraft forward action until toggled off.
-After vanilla sprint is observed it can retain the configured sprint action;
-it never calls `setSprinting`. Toggle Shift uses the same lifecycle-safe input
-owner for sneak.
+Toggle Walk snapshots the physically held forward, sprint, and jump bindings,
+then forces exactly that combination until toggled off. If none are held it
+defaults to forward. Sprint is captured only when retention is enabled; observed
+vanilla sprint can still arm retention while forward is active. It never calls
+`setSprinting`. Toggle Shift shares the lifecycle-safe input owner for sneak.
 
 - Toggle Walk and emergency release are unbound by default; bind them in Controls.
 - Toggle Shift defaults to `Right Shift`.
@@ -138,11 +139,19 @@ owner for sneak.
 
 Freelook orbits the local camera without changing player yaw/pitch or sending
 look packets. Its key is unbound by default and supports Hold or Toggle mode.
-Sensitivity, X/Y inversion, pitch bounds, smooth return duration, indicator,
-and optional third-person-back switching are configurable. Screens, focus or
-cursor loss, death, disconnect, owner changes, and disabling the feature reset
-it immediately. Perspective restoration occurs only while dotMOD still owns
-the perspective it selected.
+Sensitivity, X/Y inversion, pitch bounds, smooth return duration, and indicator
+are configurable. Activation always switches to third-person back; normal
+release keeps it through camera return, then restores the exact prior
+perspective. Screens, focus or cursor loss, death, disconnect, owner changes,
+and disabling hard-reset immediately. Manual F5 changes remain user-owned.
+
+### Full Brightness
+
+Full Brightness is an unbound local toggle that temporarily sets vanilla gamma
+to its supported maximum. It restores the exact previous value when disabled,
+disconnected, or stopped. Video Settings suspends the override so gamma can be
+edited; the selected value is retained for restoration after the screen closes.
+Runtime active state is never persisted and the feature does not write options.
 
 ### InvSeeMenu (ISM)
 

@@ -42,6 +42,7 @@ import java.util.WeakHashMap;
 public final class InventorySearchController {
     private static final int SLOT_LIMIT = 2048;
     private static final int DOCUMENT_BUDGET_PER_FRAME = 64;
+    private static final int CREATIVE_TAB_CLEARANCE = 26;
     private static final Map<HandledScreen<?>, WeakReference<InventorySearchController>> CONTROLLERS = new WeakHashMap<>();
 
     private final MinecraftClient client;
@@ -185,13 +186,15 @@ public final class InventorySearchController {
         int containerHeight = accessor.dotmod$getBackgroundHeight();
         int totalWidth = Math.max(74, Math.min(202, containerWidth));
         int x = Math.max(2, Math.min(screen.width - totalWidth - 2, containerX + (containerWidth - totalWidth) / 2));
-        boolean preferBelow = screen instanceof CreativeInventoryScreen;
-        int y = preferBelow && containerY + containerHeight + 22 <= screen.height
-                ? containerY + containerHeight + 2
+        boolean creative = screen instanceof CreativeInventoryScreen;
+        int belowOffset = creative ? CREATIVE_TAB_CLEARANCE : 2;
+        int belowY = containerY + containerHeight + belowOffset;
+        int y = creative && belowY + 20 <= screen.height - 2
+                ? belowY
                 : containerY >= 24
                 ? containerY - 22
-                : containerY + containerHeight + 22 <= screen.height
-                ? containerY + containerHeight + 2
+                : belowY + 20 <= screen.height - 2
+                ? belowY
                 : 2;
         field.setDimensionsAndPosition(totalWidth - 22, 20, x, y);
         helpButton.setDimensionsAndPosition(20, 20, x + totalWidth - 20, y);

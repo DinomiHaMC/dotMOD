@@ -1,20 +1,32 @@
 package com.dinomiha.dotmod.feature.togglewalk;
 
 public final class ToggleWalkController {
-    private boolean walking;
+    private boolean movementActive;
+    private boolean capturedForward;
+    private boolean capturedJump;
     private boolean sneaking;
     private boolean sprintRetentionArmed;
     private MovementReleaseReason lastReleaseReason;
 
-    public boolean toggleWalk(MovementContext context) {
-        if (!walking && !context.canRemainActive()) {
+    public boolean toggleWalk(MovementContext context, ForcedKeyState capturedKeys) {
+        if (!movementActive && !context.canRemainActive()) {
             return false;
         }
-        walking = !walking;
-        if (!walking) {
+        movementActive = !movementActive;
+        if (movementActive) {
+            boolean effectiveSprint = context.retainSprint() && capturedKeys.sprint();
+            ForcedKeyState capture = capturedKeys.forward() || effectiveSprint || capturedKeys.jump()
+                    ? new ForcedKeyState(capturedKeys.forward(), effectiveSprint, capturedKeys.jump(), false)
+                    : new ForcedKeyState(true, false, false, false);
+            capturedForward = capture.forward();
+            capturedJump = capture.jump();
+            sprintRetentionArmed = capture.sprint();
+        } else {
+            capturedForward = false;
+            capturedJump = false;
             sprintRetentionArmed = false;
         }
-        return walking;
+        return movementActive;
     }
 
     public boolean toggleSneak(MovementContext context) {
@@ -28,7 +40,7 @@ public final class ToggleWalkController {
     public MovementSnapshot update(MovementContext context) {
         if (!context.canRemainActive()) {
             release(reason(context));
-        } else if (walking && context.retainSprint() && context.playerSprinting()) {
+        } else if (movementActive && capturedForward && context.retainSprint() && context.playerSprinting()) {
             sprintRetentionArmed = true;
         } else if (!context.retainSprint()) {
             sprintRetentionArmed = false;
@@ -37,7 +49,9 @@ public final class ToggleWalkController {
     }
 
     public MovementSnapshot release(MovementReleaseReason reason) {
-        walking = false;
+        movementActive = false;
+        capturedForward = false;
+        capturedJump = false;
         sneaking = false;
         sprintRetentionArmed = false;
         lastReleaseReason = reason;
@@ -45,7 +59,9 @@ public final class ToggleWalkController {
     }
 
     public MovementSnapshot deactivateWalk(MovementReleaseReason reason) {
-        walking = false;
+        movementActive = false;
+        capturedForward = false;
+        capturedJump = false;
         sprintRetentionArmed = false;
         lastReleaseReason = reason;
         return snapshot();
@@ -59,10 +75,15 @@ public final class ToggleWalkController {
 
     public MovementSnapshot snapshot() {
         return new MovementSnapshot(
-                walking,
+                movementActive,
                 sneaking,
                 sprintRetentionArmed,
-                new ForcedKeyState(walking, walking && sprintRetentionArmed, sneaking),
+                new ForcedKeyState(
+                        movementActive && capturedForward,
+                        movementActive && sprintRetentionArmed,
+                        movementActive && capturedJump,
+                        sneaking
+                ),
                 lastReleaseReason
         );
     }

@@ -3,7 +3,7 @@ package com.dinomiha.dotmod.config;
 import com.google.gson.annotations.SerializedName;
 
 public final class DotModConfig {
-    public static final int CURRENT_SCHEMA_VERSION = 7;
+    public static final int CURRENT_SCHEMA_VERSION = 8;
 
     public int schemaVersion = CURRENT_SCHEMA_VERSION;
     public GeneralConfig general = new GeneralConfig();
@@ -17,6 +17,7 @@ public final class DotModConfig {
     public FeatureConfig deathHistory = new FeatureConfig();
     public ToggleWalkConfig toggleWalk = new ToggleWalkConfig();
     public FreelookConfig freelook = new FreelookConfig();
+    public FeatureConfig fullBrightness = new FeatureConfig();
     public PlayerColorsConfig playerColors = new PlayerColorsConfig();
     public FeatureConfig commandAliases = new FeatureConfig();
     public KeybindsConfig keybinds = new KeybindsConfig();
@@ -41,6 +42,7 @@ public final class DotModConfig {
         deathHistory = source.deathHistory;
         toggleWalk = source.toggleWalk;
         freelook = source.freelook;
+        fullBrightness = source.fullBrightness;
         playerColors = source.playerColors;
         commandAliases = source.commandAliases;
         keybinds = source.keybinds;

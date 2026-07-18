@@ -2,7 +2,6 @@ package com.dinomiha.dotmod.feature.freelook;
 
 import com.dinomiha.dotmod.config.ConfigService;
 import com.dinomiha.dotmod.config.FreelookActivation;
-import com.dinomiha.dotmod.config.FreelookPerspective;
 import com.dinomiha.dotmod.keybind.DotModKeybindCategory;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -89,7 +88,7 @@ public final class FreelookController {
             return;
         }
         rememberOwners(client);
-        relinquishPerspectiveIfChanged(client);
+        ensurePerspective(client);
 
         if (config.freelook.activation == FreelookActivation.HOLD) {
             if (activationKey.isPressed() && state != RuntimeState.ACTIVE) activate(client);
@@ -113,13 +112,12 @@ public final class FreelookController {
         }
         returnAnimation = null;
         state = RuntimeState.ACTIVE;
-        var config = ConfigService.get().config().freelook;
-        if (config.perspective == FreelookPerspective.SWITCH_TO_THIRD_PERSON_BACK && !ownsPerspective) {
+        if (!ownsPerspective) {
             previousPerspective = client.options.getPerspective();
             if (previousPerspective != Perspective.THIRD_PERSON_BACK) {
                 client.options.setPerspective(Perspective.THIRD_PERSON_BACK);
-                ownsPerspective = true;
             }
+            ownsPerspective = true;
         }
     }
 
@@ -170,14 +168,10 @@ public final class FreelookController {
         previousPerspective = null;
     }
 
-    private void relinquishPerspectiveIfChanged(MinecraftClient client) {
-        if (!ownsPerspective || client.options.getPerspective() == Perspective.THIRD_PERSON_BACK) return;
-        ownsPerspective = false;
-        previousPerspective = null;
-        if (state == RuntimeState.RETURNING) {
-            camera.reset();
-            returnAnimation = null;
-            state = RuntimeState.IDLE;
+    private void ensurePerspective(MinecraftClient client) {
+        if (ownsPerspective && state != RuntimeState.IDLE
+                && client.options.getPerspective() != Perspective.THIRD_PERSON_BACK) {
+            client.options.setPerspective(Perspective.THIRD_PERSON_BACK);
         }
     }
 
