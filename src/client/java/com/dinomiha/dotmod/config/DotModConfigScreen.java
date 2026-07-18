@@ -254,10 +254,48 @@ public final class DotModConfigScreen {
                 .setSaveConsumer(value -> config.hud.uniformNameTags.backgroundColor = ColorUtil.normalizeHex(value, "#000000"))
                 .build());
 
-        ConfigCategory toggleShift = builder.getOrCreateCategory(Text.translatable("config.dotmod.category.toggle_shift"));
-        toggleShift.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.toggle_shift.enabled"), config.toggleWalk.toggleShift.enabled)
+        ConfigCategory movement = builder.getOrCreateCategory(Text.translatable("config.dotmod.category.movement"));
+        movement.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.toggle_walk.enabled"), config.toggleWalk.enabled)
+                .setTooltip(Text.translatable("config.dotmod.toggle_walk.enabled.tooltip"))
+                .setSaveConsumer(value -> config.toggleWalk.enabled = value)
+                .build());
+        movement.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.toggle_walk.retain_sprint"), config.toggleWalk.retainSprint)
+                .setTooltip(Text.translatable("config.dotmod.toggle_walk.retain_sprint.tooltip"))
+                .setSaveConsumer(value -> config.toggleWalk.retainSprint = value)
+                .build());
+        movement.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.toggle_walk.deactivate_chat"), config.toggleWalk.deactivateInChat)
+                .setSaveConsumer(value -> config.toggleWalk.deactivateInChat = value)
+                .build());
+        movement.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.toggle_walk.deactivate_screens"), config.toggleWalk.deactivateInOtherScreens)
+                .setSaveConsumer(value -> config.toggleWalk.deactivateInOtherScreens = value)
+                .build());
+        movement.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.toggle_shift.enabled"), config.toggleWalk.toggleShift.enabled)
                 .setSaveConsumer(value -> config.toggleWalk.toggleShift.enabled = value)
                 .build());
+
+        ConfigCategory freelook = builder.getOrCreateCategory(Text.translatable("config.dotmod.category.freelook"));
+        freelook.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.freelook.enabled"), config.freelook.enabled)
+                .setTooltip(Text.translatable("config.dotmod.freelook.enabled.tooltip"))
+                .setSaveConsumer(value -> config.freelook.enabled = value).build());
+        freelook.addEntry(entries.startEnumSelector(Text.translatable("config.dotmod.freelook.activation"),
+                        com.dinomiha.dotmod.config.FreelookActivation.class, config.freelook.activation)
+                .setEnumNameProvider(value -> Text.translatable("config.dotmod.freelook.activation." + value.name().toLowerCase(Locale.ROOT)))
+                .setSaveConsumer(value -> config.freelook.activation = value).build());
+        freelook.addEntry(entries.startEnumSelector(Text.translatable("config.dotmod.freelook.perspective"),
+                        com.dinomiha.dotmod.config.FreelookPerspective.class, config.freelook.perspective)
+                .setEnumNameProvider(value -> Text.translatable("config.dotmod.freelook.perspective." + value.name().toLowerCase(Locale.ROOT)))
+                .setSaveConsumer(value -> config.freelook.perspective = value).build());
+        freelook.addEntry(entries.startFloatField(Text.translatable("config.dotmod.freelook.sensitivity"), config.freelook.sensitivity)
+                .setMin(0.1F).setMax(4.0F).setSaveConsumer(value -> config.freelook.sensitivity = value).build());
+        freelook.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.freelook.invert_x"), config.freelook.invertX)
+                .setSaveConsumer(value -> config.freelook.invertX = value).build());
+        freelook.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.freelook.invert_y"), config.freelook.invertY)
+                .setSaveConsumer(value -> config.freelook.invertY = value).build());
+        freelook.addEntry(entries.startIntSlider(Text.translatable("config.dotmod.freelook.return_duration"), config.freelook.returnDurationMs, 0, 1000)
+                .setTooltip(Text.translatable("config.dotmod.freelook.return_duration.tooltip"))
+                .setSaveConsumer(value -> config.freelook.returnDurationMs = value).build());
+        freelook.addEntry(entries.startBooleanToggle(Text.translatable("config.dotmod.freelook.indicator"), config.freelook.showIndicator)
+                .setSaveConsumer(value -> config.freelook.showIndicator = value).build());
 
         ConfigCategory keybinds = builder.getOrCreateCategory(Text.translatable("config.dotmod.category.keybinds"));
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.green_name")).build());
@@ -265,6 +303,9 @@ public final class DotModConfigScreen {
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.reset_name")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.uniform_name_tags")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.toggle_shift")).build());
+        keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.toggle_walk")).build());
+        keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.emergency_release")).build());
+        keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.freelook")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.preset_helper")).build());
         keybinds.addEntry(entries.startTextDescription(DotModKeybinds.description("key.dotmod.fast_commands")).build());
         keybinds.addEntry(entries.startTextDescription(Text.translatable("config.dotmod.keybinds.controls_hint")).build());

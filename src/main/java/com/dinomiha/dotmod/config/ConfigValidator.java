@@ -42,7 +42,11 @@ public final class ConfigValidator {
             config.deathHistory.enabled = true;
         }
         config.toggleWalk = config.toggleWalk == null ? new ToggleWalkConfig() : config.toggleWalk;
-        config.freelook = feature(config.freelook);
+        config.freelook = config.freelook == null ? new FreelookConfig() : config.freelook;
+        if (loadedSchema < 7) {
+            config.toggleWalk.enabled = true;
+            config.freelook.enabled = true;
+        }
         config.playerColors = config.playerColors == null ? new PlayerColorsConfig() : config.playerColors;
         config.keybinds = config.keybinds == null ? new KeybindsConfig() : config.keybinds;
         config.interfaceConfig = config.interfaceConfig == null ? new InterfaceConfig() : config.interfaceConfig;
@@ -91,6 +95,12 @@ public final class ConfigValidator {
         config.durability.middleColor = color(config.durability.middleColor, "#FFFF55");
         config.durability.highColor = color(config.durability.highColor, "#55FF55");
         config.toggleWalk.toggleShift = config.toggleWalk.toggleShift == null ? new ToggleShiftConfig() : config.toggleWalk.toggleShift;
+        config.freelook.activation = config.freelook.activation == null
+                ? FreelookActivation.HOLD : config.freelook.activation;
+        config.freelook.perspective = config.freelook.perspective == null
+                ? FreelookPerspective.PRESERVE : config.freelook.perspective;
+        config.freelook.sensitivity = finite(config.freelook.sensitivity, 1.0F, 0.1F, 4.0F);
+        config.freelook.returnDurationMs = clamp(config.freelook.returnDurationMs, 0, 1000);
         config.schemaVersion = DotModConfig.CURRENT_SCHEMA_VERSION;
     }
 

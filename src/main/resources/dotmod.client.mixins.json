@@ -10,7 +10,9 @@
     "LabelCommandRendererCommandsMixin",
     "PlayerEntityRendererMixin",
     "PlayerListHudMixin",
-    "MinecraftClientRenderMixin"
+    "MinecraftClientRenderMixin",
+    "MouseMixin",
+    "CameraMixin"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -42,7 +42,9 @@ class ConfigMigratorTest {
         assertEquals(7, result.config().hud.gridSize);
         assertTrue(result.config().hud.magneticSnapping);
         assertEquals(4, result.config().hud.magneticSnapDistance);
-        assertTrue(result.config().toggleWalk.toggleShift.active);
+        assertTrue(result.config().toggleWalk.toggleShift.enabled);
+        assertFalse(new Gson().toJson(result.config()).contains("toggleShiftActive"));
+        assertFalse(new Gson().toJson(result.config().toggleWalk.toggleShift).contains("active"));
         assertEquals("#123456", result.playerColors().get(uuid));
         assertEquals(1, result.playerColors().size());
     }

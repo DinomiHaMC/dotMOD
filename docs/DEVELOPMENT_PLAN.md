@@ -93,8 +93,9 @@ release automation, or persisted-data schema version.
   stores colors by UUID.
 - Uniform Name Tags applies screen-space scaling and a configurable opaque
   background to visible player name tags.
-- Toggle Shift controls the vanilla sneak key binding and restores its state
-  after a GUI resets key bindings.
+- Toggle Walk/Shift uses lifecycle-scoped key ownership, sprint retention, and
+  an emergency release; active state is not persisted.
+- Freelook provides packet-free relative camera orbit and smooth return.
 - Cloth Config and Mod Menu expose the current settings.
 
 ### Current Entrypoints
@@ -641,6 +642,8 @@ Suggested commit: `feat: add death history and screenshot tools`
 
 ### Stage 9 - Toggle Walk and Freelook
 
+Status: **Complete**
+
 Goals:
 
 - Add a tested movement state controller for Toggle Walk and sprint retention.
@@ -652,7 +655,7 @@ Goals:
 - Add camera return behavior, sensitivity, inversion, perspective policies, and
   HUD indicators.
 
-Planned files:
+Implemented files:
 
 ```text
 feature/togglewalk/ToggleWalkController.java
@@ -661,12 +664,10 @@ feature/togglewalk/MovementLifecycle.java
 feature/freelook/FreelookController.java
 feature/freelook/FreelookCameraState.java
 feature/freelook/CameraReturnAnimation.java
-input/EmergencyToggleController.java
-hud/widget/ToggleWalkIndicator.java
-hud/widget/FreelookIndicator.java
+hud/widget/MovementIndicatorWidget.java
+hud/widget/FreelookIndicatorWidget.java
 mixin/CameraMixin.java
 mixin/MouseMixin.java
-mixin/ClientPlayerEntityMixin.java only if a narrower adapter is insufficient
 src/test/java/com/dinomiha/dotmod/feature/togglewalk/*
 src/test/java/com/dinomiha/dotmod/feature/freelook/*
 ```

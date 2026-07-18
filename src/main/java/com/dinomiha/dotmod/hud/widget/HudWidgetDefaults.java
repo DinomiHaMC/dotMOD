@@ -17,6 +17,8 @@ public final class HudWidgetDefaults {
     public static final String ARMOR = "dotmod.armor";
     public static final String COLORED_ONLINE = "dotmod.colored_online";
     public static final String DURABILITY = "dotmod.durability";
+    public static final String MOVEMENT = "dotmod.movement";
+    public static final String FREELOOK = "dotmod.freelook";
 
     private static final List<HudWidgetDefinition> DEFINITIONS = List.of(
             definition(HEARTS, "hud.dotmod.element.hearts", 91, 9, true, HudAnchor.BOTTOM_CENTER, -91, -39, false),
@@ -30,7 +32,9 @@ public final class HudWidgetDefaults {
             definition(SCOREBOARD, "hud.dotmod.element.scoreboard", 120, 120, true, HudAnchor.CENTER_RIGHT, -124, -60, false),
             definition(ARMOR, "hud.dotmod.widget.armor", 72, 18, true, HudAnchor.BOTTOM_LEFT, 8, -26, true),
             definition(COLORED_ONLINE, "hud.dotmod.widget.colored_online", 140, 84, true, HudAnchor.TOP_LEFT, 8, 8, true),
-            definition(DURABILITY, "hud.dotmod.widget.durability", 126, 40, true, HudAnchor.BOTTOM_RIGHT, -134, -70, true)
+            definition(DURABILITY, "hud.dotmod.widget.durability", 126, 40, true, HudAnchor.BOTTOM_RIGHT, -134, -70, true),
+            definition(MOVEMENT, "hud.dotmod.widget.movement", 100, 10, true, HudAnchor.BOTTOM_CENTER, -50, -62, true),
+            definition(FREELOOK, "hud.dotmod.widget.freelook", 100, 10, true, HudAnchor.CENTER, -50, 26, true)
     );
     private static final Map<String, HudWidgetDefinition> BY_ID;
 

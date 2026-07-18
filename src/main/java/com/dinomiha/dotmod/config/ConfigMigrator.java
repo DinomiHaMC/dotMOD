@@ -65,7 +65,6 @@ public final class ConfigMigrator {
         config.playerColors.notifyChanges = legacy.notifyNameColorChanges;
 
         config.toggleWalk.toggleShift.enabled = legacy.toggleShiftEnabled;
-        config.toggleWalk.toggleShift.active = legacy.toggleShiftActive;
         config.validate();
 
         Map<UUID, String> colors = new HashMap<>();
@@ -132,6 +131,5 @@ public final class ConfigMigrator {
         float uniformNameTagSize = 1.0F;
         String uniformNameTagBackgroundColor = "#000000";
         boolean toggleShiftEnabled = true;
-        boolean toggleShiftActive;
     }
 }

@@ -91,7 +91,7 @@ class ConfigValidatorTest {
         assertEquals(-42, hearts.offsetY);
         assertTrue(migrated.durability.enabled);
         assertTrue(migrated.hud.widgets.containsKey("addon.legacy"));
-        assertEquals(6, migrated.schemaVersion);
+        assertEquals(7, migrated.schemaVersion);
     }
 
     @Test
@@ -158,5 +158,20 @@ class ConfigValidatorTest {
         assertFalse(current.commandAliases.enabled);
         assertFalse(current.deathHistory.enabled);
         assertFalse(current.screenshots.enabled);
+    }
+
+    @Test
+    void schemaSevenEnablesNewFeaturesButPreservesCurrentExplicitFalse() {
+        Gson gson = new Gson();
+        DotModConfig migrated = gson.fromJson("{\"schemaVersion\":6,\"toggleWalk\":{\"enabled\":false},\"freelook\":{\"enabled\":false}}", DotModConfig.class);
+        DotModConfig current = gson.fromJson("{\"schemaVersion\":7,\"toggleWalk\":{\"enabled\":false},\"freelook\":{\"enabled\":false}}", DotModConfig.class);
+
+        migrated.validate();
+        current.validate();
+
+        assertTrue(migrated.toggleWalk.enabled);
+        assertTrue(migrated.freelook.enabled);
+        assertFalse(current.toggleWalk.enabled);
+        assertFalse(current.freelook.enabled);
     }
 }

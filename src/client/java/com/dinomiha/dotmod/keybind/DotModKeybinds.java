@@ -12,10 +12,8 @@ import com.dinomiha.dotmod.feature.commandlist.screen.FastCommandListScreen;
 import com.dinomiha.dotmod.util.NameColorManager;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenEvents;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.client.option.StickyKeyBinding;
 import net.minecraft.client.gui.screen.ingame.HandledScreen;
 import net.minecraft.client.util.InputUtil;
 import net.minecraft.util.Identifier;
@@ -28,10 +26,8 @@ public final class DotModKeybinds {
     private static KeyBinding redName;
     private static KeyBinding resetName;
     private static KeyBinding uniformNameTags;
-    private static KeyBinding toggleShift;
     private static KeyBinding presetHelper;
     private static KeyBinding fastCommands;
-    private static boolean forcingSneak;
 
     private DotModKeybinds() {
     }
@@ -43,15 +39,7 @@ public final class DotModKeybinds {
         uniformNameTags = register("key.dotmod.uniform_name_tags", GLFW.GLFW_KEY_N);
         presetHelper = register("key.dotmod.preset_helper", InputUtil.UNKNOWN_KEY.getCode());
         fastCommands = register("key.dotmod.fast_commands", InputUtil.UNKNOWN_KEY.getCode());
-        toggleShift = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-                "key.dotmod.toggle_shift",
-                InputUtil.Type.KEYSYM,
-                GLFW.GLFW_KEY_RIGHT_SHIFT,
-                CATEGORY
-        ));
-
         ClientTickEvents.END_CLIENT_TICK.register(DotModKeybinds::tick);
-        ScreenEvents.AFTER_INIT.register((client, screen, scaledWidth, scaledHeight) -> updateSneakState(client));
     }
 
     private static KeyBinding register(String translationKey, int key) {
@@ -67,7 +55,6 @@ public final class DotModKeybinds {
     private static void tick(MinecraftClient client) {
         DotModConfig config = ConfigService.get().config();
         if (!config.general.enabled) {
-            updateSneakState(client);
             return;
         }
         while (greenName.wasPressed()) {
@@ -102,23 +89,6 @@ public final class DotModKeybinds {
                 }
             }
         }
-        while (toggleShift.wasPressed()) {
-            if (config.toggleWalk.toggleShift.enabled) {
-                config.toggleWalk.toggleShift.active = !config.toggleWalk.toggleShift.active;
-                boolean saved = ConfigService.get().save();
-                if (config.keybinds.showToggleMessages) {
-                    MessageService.sendOverlay(
-                            saved
-                                    ? Text.translatable(
-                                            "message.dotmod.toggle_shift",
-                                            Text.translatable(config.toggleWalk.toggleShift.active ? "options.on" : "options.off")
-                                    )
-                                    : Text.translatable("message.dotmod.config.save_failed"),
-                            saved ? MessageType.INFO : MessageType.ERROR
-                    );
-                }
-            }
-        }
         while (presetHelper.wasPressed()) {
             if (config.inventoryPresets.enabled) {
                 openPresetHelper(client);
@@ -129,7 +99,6 @@ public final class DotModKeybinds {
                 client.setScreen(new FastCommandListScreen(null));
             }
         }
-        updateSneakState(client);
     }
 
     private static void openPresetHelper(MinecraftClient client) {
@@ -152,43 +121,4 @@ public final class DotModKeybinds {
         }
     }
 
-    private static void updateSneakState(MinecraftClient client) {
-        DotModConfig config = ConfigService.get().config();
-        boolean shouldForce = config.general.enabled
-                && config.toggleWalk.toggleShift.enabled
-                && config.toggleWalk.toggleShift.active;
-        if (shouldForce) {
-            setSneakPressed(client.options.sneakKey, true);
-            forcingSneak = true;
-        } else if (forcingSneak) {
-            setSneakPressed(client.options.sneakKey, isSneakKeyPhysicallyPressed(client));
-            forcingSneak = false;
-        }
-    }
-
-    private static void setSneakPressed(KeyBinding sneakKey, boolean pressed) {
-        if (sneakKey instanceof StickyKeyBinding) {
-            if (pressed && !sneakKey.isPressed()) {
-                sneakKey.setPressed(true);
-            } else if (!pressed) {
-                sneakKey.setPressed(false);
-                if (sneakKey.isPressed()) {
-                    sneakKey.setPressed(true);
-                }
-            }
-            return;
-        }
-        sneakKey.setPressed(pressed);
-    }
-
-    private static boolean isSneakKeyPhysicallyPressed(MinecraftClient client) {
-        if (client.currentScreen != null) {
-            return false;
-        }
-        InputUtil.Key key = InputUtil.fromTranslationKey(client.options.sneakKey.getBoundKeyTranslationKey());
-        if (key.getCategory() == InputUtil.Type.MOUSE) {
-            return GLFW.glfwGetMouseButton(client.getWindow().getHandle(), key.getCode()) == GLFW.GLFW_PRESS;
-        }
-        return key.getCategory() == InputUtil.Type.KEYSYM && InputUtil.isKeyPressed(client.getWindow(), key.getCode());
-    }
 }

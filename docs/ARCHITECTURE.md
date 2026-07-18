@@ -57,7 +57,7 @@ uninitialized configuration.
 
 ## Configuration
 
-`DotModConfig` has schema version `6` and these top-level categories:
+`DotModConfig` has schema version `7` and these top-level categories:
 
 ```text
 general, commands, hud, quickCraft, inventoryPresets, inventorySearch,
@@ -74,6 +74,12 @@ checks inventory slots, clamps numeric values, validates RGB colors, restores
 all registered HUD settings, and advances the schema version. Schema v3 HUD
 delta offsets migrate to stable ID-keyed anchor placements without deleting
 unknown add-on widget records.
+
+Schema 7 replaces the generic Freelook placeholder with bounded activation,
+perspective, sensitivity, inversion, return, and indicator settings. It enables
+Toggle Walk and Freelook during migration while preserving explicit schema-7
+feature choices. Movement and camera active bits are never serialized, and the
+legacy Toggle Shift active bit is ignored.
 
 The legacy flat `config/dotmod.json` migration maps every existing field into
 the categorized model and moves UUID colors into their own document. Migration
@@ -163,6 +169,26 @@ in-memory player-color service.
 warnings on `END_CLIENT_TICK` with `System.nanoTime()`, does no render-time IO,
 re-arms after repair, and limits all currently-low items before choosing one
 overlay message.
+
+## Movement And Freelook
+
+`ToggleWalkController`, `ForcedKeyState`, and movement snapshots are pure state.
+The client `MovementLifecycle` is the only owner of forward, sprint, and sneak
+bindings it actually changes. It restores ordinary physical input only after a
+user toggle-off and hard-releases on configured screens, focus/death/identity
+boundaries, disconnect, shutdown, or the emergency key. It never calls the
+global `KeyBinding.unpressAll` or mutates player sprint state.
+
+Freelook keeps relative yaw/pitch offsets in `FreelookCameraState` and uses a
+smoothstep `CameraReturnAnimation`. `MouseMixin` wraps the processed local look
+call while active, and `CameraMixin` substitutes effective camera yaw/pitch for
+orbit and clipping. Player rotation and packets are untouched. The client owner
+hard-resets on screen, focus, cursor, player/world/handler/camera, death, and
+configuration boundaries. Perspective restoration is conditional on the
+perspective still being the one dotMOD selected.
+
+Movement and Freelook indicators are ordinary registered custom HUD widgets.
+They perform no IO, hide while idle, and remain visible in editor preview mode.
 
 ## InvSeeMenu
 

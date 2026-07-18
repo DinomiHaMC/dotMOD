@@ -271,11 +271,17 @@ client or platform environment.
 
 ### Toggle Walk And Freelook
 
+- Automated coverage verifies movement activation/release and sprint arming,
+  relative camera offsets, wrapping, pitch clamping, sensitivity/inversion,
+  finite-input rejection, smoothstep monotonicity, zero-duration return,
+  schema-7 migration/default behavior, and English/Russian key parity.
 - Test rebound movement/sprint keys, Hold/Toggle accessibility modes, chat,
   menus, death, disconnect, emergency stop, and HUD indicators.
 - Test Freelook hold/toggle, first/third person, pitch bounds, inversions,
   sensitivity, smooth return, movement direction, server-visible rotation, and
   compatibility with the current camera/render mixins.
+- The Stage 9 build gates are `compileClientJava`, `clean build`, and
+  `git diff --check`; runtime packet and camera compatibility remain manual.
 
 ### Server Compatibility
 

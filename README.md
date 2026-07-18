@@ -2,8 +2,8 @@
 
 dotMOD is a client-side Fabric utility mod for Minecraft 1.21.11. It combines
 compact crafting controls, a draggable vanilla HUD editor, local player colors,
-uniform player name tags, and Toggle Shift without requiring a server plugin or
-a server-side installation.
+uniform player name tags, Toggle Walk/Shift, and packet-free Freelook without
+requiring a server plugin or a server-side installation.
 
 - Current version: **2.0.0**
 - Author: **DinoMiHa**
@@ -54,6 +54,8 @@ widgets:
 - equipped armor icons;
 - colored online players;
 - compact durability readings.
+- Toggle Walk/Shift runtime state;
+- Freelook activity and camera return state.
 
 Each element can be dragged independently. Positions use a nine-point screen
 anchor plus scaled GUI-pixel offsets and are clamped to the visible screen.
@@ -117,17 +119,30 @@ and adds an opaque configurable background.
 This feature changes only player labels rendered by the client. It does not make
 hidden or otherwise unavailable players visible.
 
-### Toggle Shift
+### Toggle Walk And Shift
 
-Toggle Shift keeps the configured Minecraft sneak action active until the
-toggle is pressed again.
+Toggle Walk forces the configured Minecraft forward action until toggled off.
+After vanilla sprint is observed it can retain the configured sprint action;
+it never calls `setSprinting`. Toggle Shift uses the same lifecycle-safe input
+owner for sneak.
 
-- Default key: `Right Shift`.
-- The player stands immediately when the mode is disabled.
-- A physically held normal sneak key remains respected.
-- Opening a GUI does not cause a one-tick stand/crouch flicker.
+- Toggle Walk and emergency release are unbound by default; bind them in Controls.
+- Toggle Shift defaults to `Right Shift`.
+- Ordinary physically held keys are restored after user toggle-off.
+- Configured chat/screens, focus loss, death, disconnect, world/player changes,
+  and client shutdown hard-release every key dotMOD changed.
 - Vanilla Hold and Toggle sneak accessibility modes are supported.
-- The active state is saved between restarts.
+- Active movement state is runtime-only and always starts inactive.
+
+### Freelook
+
+Freelook orbits the local camera without changing player yaw/pitch or sending
+look packets. Its key is unbound by default and supports Hold or Toggle mode.
+Sensitivity, X/Y inversion, pitch bounds, smooth return duration, indicator,
+and optional third-person-back switching are configurable. Screens, focus or
+cursor loss, death, disconnect, owner changes, and disabling the feature reset
+it immediately. Perspective restoration occurs only while dotMOD still owns
+the perspective it selected.
 
 ### InvSeeMenu (ISM)
 
